@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"testing"
 
-	merkle "github.com/fasmat/merkle"
+	"github.com/fasmat/merkle"
 )
 
 func ExampleTree() {
@@ -235,4 +235,63 @@ func BenchmarkTreeAdd(b *testing.B) {
 	// goos: linux
 	// goarch: arm64
 	// BenchmarkTreeAdd-10    	10128928	       111.3 ns/op	      32 B/op	       1 allocs/op
+}
+
+func BenchmarkTreeRootBalanced(b *testing.B) {
+	tree := merkle.NewTree()
+	buf := make([]byte, tree.NodeSize())
+
+	// Generate a balanced tree, in this case tree.Root() will only return the (already calculated) root
+	for i := range 2048 {
+		binary.LittleEndian.PutUint64(buf, uint64(i))
+		tree.Add(buf)
+	}
+
+	for i := 0; b.Loop(); i++ {
+		tree.Root()
+	}
+
+	// goos: linux
+	// goarch: arm64
+	// BenchmarkTreeRootBalanced-10    	49660111	        24.11 ns/op	      32 B/op	       1 allocs/op
+}
+
+func BenchmarkTreeRootUnBalancedSmall(b *testing.B) {
+	tree := merkle.NewTree()
+	buf := make([]byte, tree.NodeSize())
+
+	// Generate an tree that has 1 fewer than a power of 2 leaves, in this case tree.Root() will have to calculate the
+	// root by walking the tree up to the root.
+	for i := range 2047 {
+		binary.LittleEndian.PutUint64(buf, uint64(i))
+		tree.Add(buf)
+	}
+
+	for i := 0; b.Loop(); i++ {
+		tree.Root()
+	}
+
+	// goos: linux
+	// goarch: arm64
+	// BenchmarkTreeRootUnBalancedSmall-10    	 1088770	      1076 ns/op	     384 B/op	      12 allocs/op
+}
+
+func BenchmarkTreeRootUnBalancedBig(b *testing.B) {
+	tree := merkle.NewTree()
+	buf := make([]byte, tree.NodeSize())
+
+	// Generate an tree that has 1 more than a power of 2 leaves, in this case tree.Root() will have to calculate the
+	// root by walking the tree up to the root and padding on the way.
+	for i := range 2049 {
+		binary.LittleEndian.PutUint64(buf, uint64(i))
+		tree.Add(buf)
+	}
+
+	for i := 0; b.Loop(); i++ {
+		tree.Root()
+	}
+
+	// goos: linux
+	// goarch: arm64
+	// BenchmarkTreeRootUnBalancedBig-10    	  914871	      1159 ns/op	     416 B/op	      13 allocs/op
 }
