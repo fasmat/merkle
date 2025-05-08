@@ -3,7 +3,7 @@ package merkle
 // Builder is a builder for creating a Merkle tree. Use it with TreeBuilder() and With...() methods.
 type Builder struct {
 	hasher    Hasher
-	minHeight int
+	minHeight uint64
 }
 
 // NewTree creates a new Merkle tree with the default hash function (SHA256).
@@ -23,7 +23,7 @@ func (tb Builder) WithHasher(f Hasher) Builder {
 }
 
 // WithMinHeight sets the minimum height for the Merkle tree.
-func (tb Builder) WithMinHeight(h int) Builder {
+func (tb Builder) WithMinHeight(h uint64) Builder {
 	tb.minHeight = h
 	return tb
 }

@@ -213,7 +213,7 @@ func TestTreeMinHeightGreater(t *testing.T) {
 	t.Parallel()
 
 	tt := []struct {
-		minHeight    int
+		minHeight    uint64
 		expectedRoot string
 	}{
 		{4, "000102030405060700"},   // need to add one padding node to root

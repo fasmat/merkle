@@ -4,7 +4,7 @@ package merkle
 type Tree struct {
 	hasher    Hasher
 	buf       []byte // Buffer for temporary storage of hashes
-	minHeight int    // Minimum height of the tree
+	minHeight uint64 // Minimum height of the tree
 
 	base *layer // The base layer of the tree (the leafs)
 }
@@ -22,8 +22,8 @@ func (t *Tree) NodeSize() int {
 
 // Add adds a new value (leaf) to the tree.
 func (t *Tree) Add(value []byte) {
-	curNode := make([]byte, 0, len(value))
-	curNode = append(curNode, value...)
+	curNode := make([]byte, len(value))
+	copy(curNode, value)
 	curLayer := t.base
 
 	// Loop through the layers of the tree
@@ -70,7 +70,7 @@ func (t *Tree) Root() []byte {
 		}
 	}
 	// If the height is less than the minimum height, add padding nodes
-	for i := height; i < t.minHeight; i++ {
+	for i := uint64(height); i < t.minHeight; i++ {
 		root = t.hasher.Hash(nil, root, padding)
 	}
 	return root
