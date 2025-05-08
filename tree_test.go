@@ -143,6 +143,36 @@ func TestTreeUnbalanced(t *testing.T) {
 	}
 }
 
+func TestTreeAddAfterRootUpdatesRoot(t *testing.T) {
+	t.Parallel()
+
+	tree := merkle.NewTree()
+	buf := make([]byte, tree.NodeSize())
+	for i := range 8 {
+		binary.LittleEndian.PutUint64(buf, uint64(i))
+		tree.Add(buf)
+	}
+
+	rootString := hex.EncodeToString(tree.Root())
+	if rootString != "89a0f1577268cc19b0a39c7a69f804fd140640c699585eb635ebb03c06154cce" {
+		t.Errorf(
+			"Expected hash to be 89a0f1577268cc19b0a39c7a69f804fd140640c699585eb635ebb03c06154cce, got %s",
+			rootString,
+		)
+	}
+
+	binary.LittleEndian.PutUint64(buf, 8)
+	tree.Add(buf)
+
+	rootString = hex.EncodeToString(tree.Root())
+	if rootString != "cb71c80ee780788eedb819ec125a41e0cde57bd0955cdd3157ca363193ab5ff1" {
+		t.Errorf(
+			"Expected hash to be cb71c80ee780788eedb819ec125a41e0cde57bd0955cdd3157ca363193ab5ff1, got %s",
+			rootString,
+		)
+	}
+}
+
 func TestTreeMinHeightEqual(t *testing.T) {
 	t.Parallel()
 
