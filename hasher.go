@@ -9,7 +9,8 @@ import (
 // Hasher is an interface for hashing two child hashes to compute a parent hash.
 type Hasher interface {
 	// Hash computes the hash of the given child hashes.
-	// The buffer is used for temporary storage to avoid allocations.
+	// A buffer is provided to avoid allocations. Only write to the buffer after consuming the
+	// children since it might point to the same memory as one of the child hashes.
 	Hash(buf, lChild, rChild []byte) []byte
 
 	// Size returns the size of the hash in bytes.

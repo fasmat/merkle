@@ -254,19 +254,154 @@ func (concatHasher) Hash(_, lChild, rChild []byte) []byte {
 	return buf
 }
 
+func TestTreeProof(t *testing.T) {
+	t.Parallel()
+
+	tree := merkle.TreeBuilder().
+		WithLeafToProve(4).
+		Build()
+	buf := make([]byte, tree.NodeSize())
+	for i := range 8 {
+		binary.LittleEndian.PutUint64(buf, uint64(i))
+		tree.Add(buf)
+	}
+
+	root, proof := tree.RootAndProof()
+	rootString := hex.EncodeToString(root)
+	if rootString != "89a0f1577268cc19b0a39c7a69f804fd140640c699585eb635ebb03c06154cce" {
+		t.Errorf(
+			"Expected hash to be 89a0f1577268cc19b0a39c7a69f804fd140640c699585eb635ebb03c06154cce, got %s",
+			rootString,
+		)
+	}
+
+	expectedProof := []string{
+		"0500000000000000000000000000000000000000000000000000000000000000",
+		"fa670379e5c2212ed93ff09769622f81f98a91e1ec8fb114d607dd25220b9088",
+		"ba94ffe7edabf26ef12736f8eb5ce74d15bedb6af61444ae2906e926b1a95084",
+	}
+	if len(proof) != len(expectedProof) {
+		t.Errorf("Expected proof to be of length %d, got %d", len(expectedProof), len(proof))
+		t.FailNow()
+	}
+	for i, p := range proof {
+		pString := hex.EncodeToString(p)
+		if pString != expectedProof[i] {
+			t.Errorf("Expected proof[%d] to be %s, got %s", i, expectedProof[i], pString)
+		}
+	}
+}
+
+func TestTreeMultiProof(t *testing.T) {
+	t.Parallel()
+
+	tree := merkle.TreeBuilder().
+		WithLeafToProve(0).
+		WithLeafToProve(1).
+		WithLeafToProve(4).
+		Build()
+	buf := make([]byte, tree.NodeSize())
+	for i := range 8 {
+		binary.LittleEndian.PutUint64(buf, uint64(i))
+		tree.Add(buf)
+	}
+
+	root, proof := tree.RootAndProof()
+	rootString := hex.EncodeToString(root)
+	if rootString != "89a0f1577268cc19b0a39c7a69f804fd140640c699585eb635ebb03c06154cce" {
+		t.Errorf(
+			"Expected hash to be 89a0f1577268cc19b0a39c7a69f804fd140640c699585eb635ebb03c06154cce, got %s",
+			rootString,
+		)
+	}
+
+	expectedProof := []string{
+		"0094579cfc7b716038d416a311465309bea202baa922b224a7b08f01599642fb",
+		"0500000000000000000000000000000000000000000000000000000000000000",
+		"fa670379e5c2212ed93ff09769622f81f98a91e1ec8fb114d607dd25220b9088",
+	}
+	if len(proof) != len(expectedProof) {
+		t.Errorf("Expected proof to be of length %d, got %d", len(expectedProof), len(proof))
+		t.FailNow()
+	}
+	for i, p := range proof {
+		pString := hex.EncodeToString(p)
+		if pString != expectedProof[i] {
+			t.Errorf("Expected proof[%d] to be %s, got %s", i, expectedProof[i], pString)
+		}
+	}
+}
+
+func TestTreeProofUnbalanced(t *testing.T) {
+	t.Parallel()
+
+	tree := merkle.TreeBuilder().
+		WithLeafToProve(0).
+		WithLeafToProve(4).
+		WithLeafToProve(7).
+		Build()
+	buf := make([]byte, tree.NodeSize())
+	for i := range 10 {
+		binary.LittleEndian.PutUint64(buf, uint64(i))
+		tree.Add(buf)
+	}
+
+	root, proof := tree.RootAndProof()
+	rootString := hex.EncodeToString(root)
+	if rootString != "59f32a43534fe4c4c0966421aef624267cdf65bd11f74998c60f27c7caccb12d" {
+		t.Errorf(
+			"Expected hash to be 59f32a43534fe4c4c0966421aef624267cdf65bd11f74998c60f27c7caccb12d, got %s",
+			rootString,
+		)
+	}
+
+	expectedProof := []string{
+		"0100000000000000000000000000000000000000000000000000000000000000",
+		"0094579cfc7b716038d416a311465309bea202baa922b224a7b08f01599642fb",
+		"0500000000000000000000000000000000000000000000000000000000000000",
+		"0600000000000000000000000000000000000000000000000000000000000000",
+		"bc68417a8495de6e22d95b980fca5a1183f29eff0e2a9b7ddde91ed5bcbea952",
+	}
+	if len(proof) != len(expectedProof) {
+		t.Errorf("Expected proof to be of length %d, got %d", len(expectedProof), len(proof))
+		t.FailNow()
+	}
+	for i, p := range proof {
+		pString := hex.EncodeToString(p)
+		if pString != expectedProof[i] {
+			t.Errorf("Expected proof[%d] to be %s, got %s", i, expectedProof[i], pString)
+		}
+	}
+}
+
 // Benchmark results
 //
 // goos: linux
 // goarch: arm64
 // pkg: github.com/fasmat/merkle
-// BenchmarkTreeAdd-10                    	11207311	       105.6 ns/op	      32 B/op	       1 allocs/op
-// BenchmarkTreeRootBalanced-10           	48244114	        25.38 ns/op	      32 B/op	       1 allocs/op
-// BenchmarkTreeRootUnBalancedSmall-10    	 1233927	       972.5 ns/op	      64 B/op	       2 allocs/op
-// BenchmarkTreeRootUnBalancedBig-10      	 1000000	      1054 ns/op	      64 B/op	       2 allocs/op
+// BenchmarkTreeAdd-10                        11709153           102.7 ns/op            32 B/op          1 allocs/op
+// BenchmarkTreeAddWithProof-10               11546602           102.8 ns/op            32 B/op          1 allocs/op
+// BenchmarkTreeRootBalanced-10               55411255            21.38 ns/op            0 B/op          0 allocs/op
+// BenchmarkTreeRootUnBalancedSmall-10         1253310           957.2 ns/op            32 B/op          1 allocs/op
+// BenchmarkTreeRootUnBalancedBig-10           1000000          1046 ns/op              32 B/op          1 allocs/op
+// BenchmarkTreeProofBalanced-10               4586818           260.2 ns/op           640 B/op         12 allocs/op
+// BenchmarkTreeProofUnBalancedSmall-10        1000000          1185 ns/op             672 B/op         13 allocs/op
+// BenchmarkTreeProofUnBalancedBig-10           837196          1307 ns/op             704 B/op         14 allocs/op
 // PASS
 
 func BenchmarkTreeAdd(b *testing.B) {
 	tree := merkle.NewTree()
+	buf := make([]byte, tree.NodeSize())
+	for i := 0; b.Loop(); i++ {
+		binary.LittleEndian.PutUint64(buf, uint64(i))
+		tree.Add(buf)
+	}
+}
+
+func BenchmarkTreeAddWithProof(b *testing.B) {
+	tree := merkle.TreeBuilder().
+		WithLeafToProve(4).
+		Build()
 	buf := make([]byte, tree.NodeSize())
 	for i := 0; b.Loop(); i++ {
 		binary.LittleEndian.PutUint64(buf, uint64(i))
@@ -318,5 +453,50 @@ func BenchmarkTreeRootUnBalancedBig(b *testing.B) {
 
 	for i := 0; b.Loop(); i++ {
 		tree.Root()
+	}
+}
+
+func BenchmarkTreeProofBalanced(b *testing.B) {
+	tree := merkle.TreeBuilder().
+		WithLeafToProve(1000).
+		Build()
+	buf := make([]byte, tree.NodeSize())
+	for i := range 2048 {
+		binary.LittleEndian.PutUint64(buf, uint64(i))
+		tree.Add(buf)
+	}
+
+	for i := 0; b.Loop(); i++ {
+		tree.Proof()
+	}
+}
+
+func BenchmarkTreeProofUnBalancedSmall(b *testing.B) {
+	tree := merkle.TreeBuilder().
+		WithLeafToProve(1001).
+		Build()
+	buf := make([]byte, tree.NodeSize())
+	for i := range 2047 {
+		binary.LittleEndian.PutUint64(buf, uint64(i))
+		tree.Add(buf)
+	}
+
+	for i := 0; b.Loop(); i++ {
+		tree.Proof()
+	}
+}
+
+func BenchmarkTreeProofUnBalancedBig(b *testing.B) {
+	tree := merkle.TreeBuilder().
+		WithLeafToProve(1000).
+		Build()
+	buf := make([]byte, tree.NodeSize())
+	for i := range 2049 {
+		binary.LittleEndian.PutUint64(buf, uint64(i))
+		tree.Add(buf)
+	}
+
+	for i := 0; b.Loop(); i++ {
+		tree.Proof()
 	}
 }
