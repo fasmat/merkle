@@ -60,18 +60,18 @@ func (t *Tree) Root() []byte {
 			root = curLayer.parking
 		case curLayer.parking != nil && root != nil:
 			// If there is a parking node and a root, hash them together
-			root = t.hasher.Hash(nil, curLayer.parking, root)
+			root = t.hasher.Hash(root, curLayer.parking, root)
 		case curLayer.parking != nil:
 			// If there is a parking node, but no root, hash it with the padding value
-			root = t.hasher.Hash(nil, curLayer.parking, padding)
+			root = t.hasher.Hash(root, curLayer.parking, padding)
 		case root != nil:
 			// If there is a root, but no parking node, hash it with the padding value
-			root = t.hasher.Hash(nil, root, padding)
+			root = t.hasher.Hash(root, root, padding)
 		}
 	}
 	// If the height is less than the minimum height, add padding nodes
 	for i := uint64(height); i < t.minHeight; i++ {
-		root = t.hasher.Hash(nil, root, padding)
+		root = t.hasher.Hash(root, root, padding)
 	}
 	return root
 }

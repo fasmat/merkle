@@ -247,12 +247,23 @@ func (concatHasher) Size() int {
 	return 1
 }
 
-func (concatHasher) Hash(buf, lChild, rChild []byte) []byte {
-	buf = buf[:0]
+func (concatHasher) Hash(_, lChild, rChild []byte) []byte {
+	buf := make([]byte, 0, len(lChild)+len(rChild))
 	buf = append(buf, lChild...)
 	buf = append(buf, rChild...)
 	return buf
 }
+
+// Benchmark results
+//
+// goos: linux
+// goarch: arm64
+// pkg: github.com/fasmat/merkle
+// BenchmarkTreeAdd-10                    	11207311	       105.6 ns/op	      32 B/op	       1 allocs/op
+// BenchmarkTreeRootBalanced-10           	48244114	        25.38 ns/op	      32 B/op	       1 allocs/op
+// BenchmarkTreeRootUnBalancedSmall-10    	 1233927	       972.5 ns/op	      64 B/op	       2 allocs/op
+// BenchmarkTreeRootUnBalancedBig-10      	 1000000	      1054 ns/op	      64 B/op	       2 allocs/op
+// PASS
 
 func BenchmarkTreeAdd(b *testing.B) {
 	tree := merkle.NewTree()
@@ -261,10 +272,6 @@ func BenchmarkTreeAdd(b *testing.B) {
 		binary.LittleEndian.PutUint64(buf, uint64(i))
 		tree.Add(buf)
 	}
-
-	// goos: linux
-	// goarch: arm64
-	// BenchmarkTreeAdd-10    	10128928	       111.3 ns/op	      32 B/op	       1 allocs/op
 }
 
 func BenchmarkTreeRootBalanced(b *testing.B) {
@@ -280,10 +287,6 @@ func BenchmarkTreeRootBalanced(b *testing.B) {
 	for i := 0; b.Loop(); i++ {
 		tree.Root()
 	}
-
-	// goos: linux
-	// goarch: arm64
-	// BenchmarkTreeRootBalanced-10    	49660111	        24.11 ns/op	      32 B/op	       1 allocs/op
 }
 
 func BenchmarkTreeRootUnBalancedSmall(b *testing.B) {
@@ -300,10 +303,6 @@ func BenchmarkTreeRootUnBalancedSmall(b *testing.B) {
 	for i := 0; b.Loop(); i++ {
 		tree.Root()
 	}
-
-	// goos: linux
-	// goarch: arm64
-	// BenchmarkTreeRootUnBalancedSmall-10    	 1088770	      1076 ns/op	     384 B/op	      12 allocs/op
 }
 
 func BenchmarkTreeRootUnBalancedBig(b *testing.B) {
@@ -320,8 +319,4 @@ func BenchmarkTreeRootUnBalancedBig(b *testing.B) {
 	for i := 0; b.Loop(); i++ {
 		tree.Root()
 	}
-
-	// goos: linux
-	// goarch: arm64
-	// BenchmarkTreeRootUnBalancedBig-10    	  914871	      1159 ns/op	     416 B/op	      13 allocs/op
 }
