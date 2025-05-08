@@ -35,8 +35,9 @@ func (s *sha256Hasher) Hash(buf, lChild, rChild []byte) []byte {
 	return h.Sum(buf[:0])
 }
 
-// Sha256 returns a Hasher that computes the root by concatinating the two children and hashing them with SHA256.
-// It uses a sync.Pool to reuse hash.Hash instances for efficiency.
+// Sha256 returns a Hasher that computes the root by concatenating the two children and hashing them with SHA256.
+// It uses a sync.Pool to reuse hash.Hash instances for efficiency while still allowing multiple trees to be built
+// concurrently using the same hasher.
 func Sha256() Hasher {
 	return &sha256Hasher{
 		pool: &sync.Pool{
