@@ -9,7 +9,7 @@ import (
 	"github.com/fasmat/merkle"
 )
 
-func ExampleTree() {
+func ExampleNewTree() {
 	// Create a new Merkle tree
 	tree := merkle.NewTree()
 
@@ -20,7 +20,7 @@ func ExampleTree() {
 		tree.Add(b)
 	}
 
-	// Print the rootString hash
+	// Print the root hash
 	rootString := hex.EncodeToString(tree.Root())
 	fmt.Println(rootString) // Output: 89a0f1577268cc19b0a39c7a69f804fd140640c699585eb635ebb03c06154cce
 }
@@ -281,8 +281,7 @@ func TestTreeProof(t *testing.T) {
 		"ba94ffe7edabf26ef12736f8eb5ce74d15bedb6af61444ae2906e926b1a95084",
 	}
 	if len(proof) != len(expectedProof) {
-		t.Errorf("Expected proof to be of length %d, got %d", len(expectedProof), len(proof))
-		t.FailNow()
+		t.Fatalf("Expected proof to be of length %d, got %d", len(expectedProof), len(proof))
 	}
 	for i, p := range proof {
 		pString := hex.EncodeToString(p)
@@ -321,8 +320,7 @@ func TestTreeMultiProof(t *testing.T) {
 		"fa670379e5c2212ed93ff09769622f81f98a91e1ec8fb114d607dd25220b9088",
 	}
 	if len(proof) != len(expectedProof) {
-		t.Errorf("Expected proof to be of length %d, got %d", len(expectedProof), len(proof))
-		t.FailNow()
+		t.Fatalf("Expected proof to be of length %d, got %d", len(expectedProof), len(proof))
 	}
 	for i, p := range proof {
 		pString := hex.EncodeToString(p)
@@ -363,8 +361,7 @@ func TestTreeProofUnbalanced(t *testing.T) {
 		"bc68417a8495de6e22d95b980fca5a1183f29eff0e2a9b7ddde91ed5bcbea952",
 	}
 	if len(proof) != len(expectedProof) {
-		t.Errorf("Expected proof to be of length %d, got %d", len(expectedProof), len(proof))
-		t.FailNow()
+		t.Fatalf("Expected proof to be of length %d, got %d", len(expectedProof), len(proof))
 	}
 	for i, p := range proof {
 		pString := hex.EncodeToString(p)

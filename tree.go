@@ -1,8 +1,6 @@
 package merkle
 
-import (
-	"math/bits"
-)
+import "math/bits"
 
 // Tree represents a Merkle tree.
 type Tree struct {
@@ -106,7 +104,10 @@ func (t *Tree) Proof() [][]byte {
 func (t *Tree) RootAndProof() ([]byte, [][]byte) {
 	var proof [][]byte
 	if t.leavesToProve != nil {
-		proofLen := max(int(t.minHeight), bits.Len64(t.currentLeaf-1))
+		// Proof size is at least the minimum height of the tree either set by the user or
+		// calculated from the current leaf. It can be bigger with multiple leaves to prove.
+		// This sets a reasonable starting capacity for the proof slice to avoid many allocations.
+		proofLen := max(int(t.minHeight), bits.Len64(t.currentLeaf), len(t.proof))
 		proof = make([][]byte, len(t.proof), proofLen)
 		for i, p := range t.proof {
 			proof[i] = make([]byte, len(p))
@@ -128,12 +129,14 @@ func (t *Tree) RootAndProof() ([]byte, [][]byte) {
 		// Otherwise check if we are on the proving path and need to add one of the nodes to the proof
 		switch {
 		case curLayer.onProvingPath && !onProvingPath:
-			proofNode := make([]byte, len(root))
+			proofNode := make([]byte, t.hasher.Size())
 			copy(proofNode, root)
 			proof = append(proof, proofNode)
 			onProvingPath = true
 		case onProvingPath && !curLayer.onProvingPath:
-			proof = append(proof, curLayer.parking) // TODO(mafa): I believe this is never needed
+			proofNode := make([]byte, t.hasher.Size())
+			copy(proofNode, curLayer.parking)
+			proof = append(proof, proofNode)
 		default:
 			// either both or none are on the proving path, do not add anything to the proof
 		}

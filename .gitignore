@@ -14,6 +14,9 @@ bin/
 # Test binary, built with `go test -c`
 *.test
 
+# Testdata directory, created from fuzz tests
+testdata/
+
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 
