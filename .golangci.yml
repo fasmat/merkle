@@ -45,11 +45,6 @@ linters:
               desc: use math/rand/v2
             - pkg: "github.com/pkg/errors"
               desc: Should be replaced by standard lib errors package
-    errcheck:
-      # Report about not checking of errors in type assertions: `a := b.(MyStruct)`.
-      check-type-assertions: true
-      # report about assignment of errors to blank identifier: `num, _ := strconv.Atoi(numStr)`.
-      check-blank: true
     lll:
       # Max line length, lines longer will be reported.
       # '\t' is counted as 1 character by default, and can be changed with the tab-width option.

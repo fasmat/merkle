@@ -27,7 +27,7 @@ func (sha256Hasher) Size() int {
 
 func (s *sha256Hasher) Hash(buf, lChild, rChild []byte) []byte {
 	// Use the sync.Pool to get a hash.Hash instance. The cast is safe, since we control the pool
-	h := s.pool.Get().(hash.Hash) //nolint:errcheck
+	h := s.pool.Get().(hash.Hash)
 	defer s.pool.Put(h)
 	defer h.Reset()
 
