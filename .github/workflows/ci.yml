@@ -40,11 +40,13 @@ jobs:
         with:
           check-latest: true
           go-version-file: "go.mod"
+
       - name: Run tests
         run: |
-          go test -v "-coverprofile=coverage.txt" ./...
+          go test -v -race "-coverprofile=coverage.txt" ./...
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
+        if: ${{ matrix.os == 'ubuntu-24.04' }}
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
