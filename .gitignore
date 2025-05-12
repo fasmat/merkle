@@ -14,11 +14,12 @@ bin/
 # Test binary, built with `go test -c`
 *.test
 
-# Testdata directory, created from fuzz tests
+# Test data directory, created from fuzz tests
 testdata/
 
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
+coverage.txt
 
 # Dependency directories (remove the comment below to include it)
 vendor/
