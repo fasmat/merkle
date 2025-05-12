@@ -334,9 +334,48 @@ func TestTreeProofUnbalanced(t *testing.T) {
 	t.Parallel()
 
 	tree := merkle.TreeBuilder().
+		WithLeafToProve(8).
+		Build()
+
+	b := make([]byte, tree.NodeSize())
+	for i := range 10 {
+		binary.LittleEndian.PutUint64(b, uint64(i))
+		tree.Add(b)
+	}
+
+	root, proof := tree.RootAndProof()
+	rootString := hex.EncodeToString(root)
+	if rootString != "59f32a43534fe4c4c0966421aef624267cdf65bd11f74998c60f27c7caccb12d" {
+		t.Errorf(
+			"Expected hash to be 59f32a43534fe4c4c0966421aef624267cdf65bd11f74998c60f27c7caccb12d, got %s",
+			rootString,
+		)
+	}
+
+	expectedProof := []string{
+		"0900000000000000000000000000000000000000000000000000000000000000",
+		"0000000000000000000000000000000000000000000000000000000000000000",
+		"0000000000000000000000000000000000000000000000000000000000000000",
+		"89a0f1577268cc19b0a39c7a69f804fd140640c699585eb635ebb03c06154cce",
+	}
+	if len(proof) != len(expectedProof) {
+		t.Fatalf("Expected proof to be of length %d, got %d", len(expectedProof), len(proof))
+	}
+	for i, p := range proof {
+		pString := hex.EncodeToString(p)
+		if pString != expectedProof[i] {
+			t.Errorf("Expected proof[%d] to be %s, got %s", i, expectedProof[i], pString)
+		}
+	}
+}
+
+func TestTreeMultiProofUnbalanced(t *testing.T) {
+	t.Parallel()
+
+	tree := merkle.TreeBuilder().
 		WithLeafToProve(0).
 		WithLeafToProve(4).
-		WithLeafToProve(7).
+		WithLeafToProve(8).
 		Build()
 	buf := make([]byte, tree.NodeSize())
 	for i := range 10 {
@@ -357,8 +396,10 @@ func TestTreeProofUnbalanced(t *testing.T) {
 		"0100000000000000000000000000000000000000000000000000000000000000",
 		"0094579cfc7b716038d416a311465309bea202baa922b224a7b08f01599642fb",
 		"0500000000000000000000000000000000000000000000000000000000000000",
-		"0600000000000000000000000000000000000000000000000000000000000000",
-		"bc68417a8495de6e22d95b980fca5a1183f29eff0e2a9b7ddde91ed5bcbea952",
+		"fa670379e5c2212ed93ff09769622f81f98a91e1ec8fb114d607dd25220b9088",
+		"0900000000000000000000000000000000000000000000000000000000000000",
+		"0000000000000000000000000000000000000000000000000000000000000000",
+		"0000000000000000000000000000000000000000000000000000000000000000",
 	}
 	if len(proof) != len(expectedProof) {
 		t.Fatalf("Expected proof to be of length %d, got %d", len(expectedProof), len(proof))
@@ -464,7 +505,7 @@ func BenchmarkTreeProofBalanced(b *testing.B) {
 	}
 
 	for i := 0; b.Loop(); i++ {
-		tree.Proof()
+		tree.RootAndProof()
 	}
 }
 
@@ -479,7 +520,7 @@ func BenchmarkTreeProofUnBalancedSmall(b *testing.B) {
 	}
 
 	for i := 0; b.Loop(); i++ {
-		tree.Proof()
+		tree.RootAndProof()
 	}
 }
 
@@ -494,6 +535,6 @@ func BenchmarkTreeProofUnBalancedBig(b *testing.B) {
 	}
 
 	for i := 0; b.Loop(); i++ {
-		tree.Proof()
+		tree.RootAndProof()
 	}
 }

@@ -94,12 +94,6 @@ func (t *Tree) Root() []byte {
 	return root
 }
 
-// Proof returns the proof for the leaves to prove.
-func (t *Tree) Proof() [][]byte {
-	_, proof := t.RootAndProof()
-	return proof
-}
-
 // RootAndProof returns the root hash and the proof for the leaves to prove.
 func (t *Tree) RootAndProof() ([]byte, [][]byte) {
 	var proof [][]byte
