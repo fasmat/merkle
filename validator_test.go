@@ -187,6 +187,27 @@ func TestValidateMultiProofUnbalanced(t *testing.T) {
 	}
 }
 
+func TestValidateCustomHasher(t *testing.T) {
+	t.Parallel()
+
+	leaves := make(map[uint64][]byte)
+	leaves[4], _ = hex.DecodeString("04")
+
+	root, _ := hex.DecodeString("0001020304050607")
+	proof := make([][]byte, 3)
+	proof[0], _ = hex.DecodeString("05")
+	proof[1], _ = hex.DecodeString("0607")
+	proof[2], _ = hex.DecodeString("00010203")
+
+	valid, err := merkle.ValidateProof(root, leaves, proof, merkle.WithHasher(concatHasher{}))
+	if err != nil {
+		t.Error(err)
+	}
+	if !valid {
+		t.Error("proof is not valid")
+	}
+}
+
 func TestValidateProofInvalid(t *testing.T) {
 	t.Parallel()
 
@@ -302,8 +323,8 @@ func TestValidateProofEmpty(t *testing.T) {
 // goos: linux
 // goarch: arm64
 // pkg: github.com/fasmat/merkle
-// BenchmarkValidateProof-10         	 1338496	       881.9 ns/op	    1674 B/op	       7 allocs/op
-// BenchmarkValidateMultiProof-10    	  883424	      1208 ns/op	    1752 B/op	      10 allocs/op
+// BenchmarkValidateProof-10         	  956352	      1191 ns/op	    1673 B/op	       7 allocs/op
+// BenchmarkValidateMultiProof-10    	  706333	      1709 ns/op	    1752 B/op	      10 allocs/op
 // PASS
 
 func BenchmarkValidateProof(b *testing.B) {

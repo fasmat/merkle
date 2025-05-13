@@ -94,8 +94,8 @@ func (v *validator) calcRoot(maxHeight uint64, rootBuf []byte) ([]byte, error) {
 				return nil, ErrShortProof
 			}
 			return currNode, nil
-		case len(v.indices) > 0 && v.indices[0]>>height == currIndex^1:
-			// next index is an ancestor of the sibling of the current node
+		case len(v.indices) > 0 && (v.indices[0]>>height) == (currIndex^1):
+			// next index is an ancestor of the right sibling of the current node
 			// we need to calculate the sibling first by calculating the root of the subtree
 			if siblingBuf == nil {
 				siblingBuf = make([]byte, 0, len(currNode))
@@ -104,16 +104,12 @@ func (v *validator) calcRoot(maxHeight uint64, rootBuf []byte) ([]byte, error) {
 			if err != nil {
 				return nil, err
 			}
-			if currIndex%2 == 0 {
-				lChild, rChild = currNode, sibling
-			} else {
-				lChild, rChild = sibling, currNode
-			}
+			lChild, rChild = currNode, sibling
 		default: // next index is not an ancestor of the sibling of the current node
 			if len(v.proof) == 0 {
 				return nil, ErrShortProof
 			}
-			if currIndex%2 == 0 {
+			if currIndex&1 == 0 {
 				lChild, rChild = currNode, v.proof[0]
 			} else {
 				lChild, rChild = v.proof[0], currNode
