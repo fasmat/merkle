@@ -31,9 +31,9 @@ func (v *validatorOpts) Hasher() Hasher {
 type ValidatorOpt func(*validatorOpts)
 
 // WithHasher sets the hash function for the validator. If not set, the default SHA256 hasher is used.
-func WithHasher(f Hasher) ValidatorOpt {
+func WithHasher(h Hasher) ValidatorOpt {
 	return func(opts *validatorOpts) {
-		opts.hasher = f
+		opts.hasher = h
 	}
 }
 
