@@ -30,6 +30,9 @@ func (t *Tree) NodeSize() int {
 }
 
 // Add adds a new value (leaf) to the tree.
+//
+// Call this method for each leaf you want to add to the tree before retrieving the root hash with Root() or
+// RootAndProof().
 func (t *Tree) Add(value []byte) {
 	curNode := make([]byte, len(value))
 	copy(curNode, value)
