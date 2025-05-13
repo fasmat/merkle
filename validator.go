@@ -30,7 +30,7 @@ func (v *validatorOpts) Hasher() Hasher {
 // ValidatorOpt is a functional option for configuring the validator.
 type ValidatorOpt func(*validatorOpts)
 
-// WithHasher sets the hash function for the validator.
+// WithHasher sets the hash function for the validator. If not set, the default SHA256 hasher is used.
 func WithHasher(f Hasher) ValidatorOpt {
 	return func(opts *validatorOpts) {
 		opts.hasher = f

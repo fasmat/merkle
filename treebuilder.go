@@ -24,7 +24,7 @@ func TreeBuilder() *Builder {
 	}
 }
 
-// WithHasher sets the hash function for the Merkle tree.
+// WithHasher sets the hash function for the Merkle tree. If not set, the default SHA256 hasher is used.
 func (tb *Builder) WithHasher(f Hasher) *Builder {
 	tb.hasher = f
 	return tb
