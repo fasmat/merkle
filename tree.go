@@ -119,7 +119,7 @@ func (t *Tree) RootAndProof() ([]byte, [][]byte) {
 		height++
 		// If this is a balanced tree, the parking node is the root and the proof is complete
 		if curLayer.parking != nil && root == nil && curLayer.next == nil {
-			root = curLayer.parking
+			root = append(root[:0], curLayer.parking...) // Copy the parking node to the root
 			break
 		}
 
