@@ -22,7 +22,11 @@ The Merkle tree is constructed sequentially and stored in memory. The [`Tree.Add
 
 The tree is built bottom-up: each node is derived from its children. The [`Tree.Root`](https://pkg.go.dev/github.com/fasmat/merkle#Tree.Root) method returns the root hash of the tree, padding with zero values to the right if a node lacks a sibling.
 
-_TODO (mafa): Add a diagram illustrating tree construction._
+![Merkle Tree Construction](docs/merkle-tree-construction.gif)
+
+During construction only the parking nodes are retained (green in animation). Whenever a node is added that already has a sibling (i.e. parking node on that level) the nodes are hashed and a new parking node is created on a higher level, continuing the process until a level is reached that has no sibling.
+
+In a balanced tree only the top level will have a parking node, that is returned as the root of the tree when the [`Tree.Root`](https://pkg.go.dev/github.com/fasmat/merkle#Tree.Root) method is called. In an unbalanced tree, parking nodes below the root receive zero values as siblings, and the root will be the hash of the last parking node.
 
 ### Proof Generation and Verification
 
@@ -31,5 +35,3 @@ You can generate a Merkle proof for one or more leaves using [`Builder.WithLeafT
 The proof is constructed by collecting the sibling hashes of nodes that cannot be derived solely from the proven leaves. These hashes are returned in the order necessary to verify the inclusion path back to the root, as produced by [`Tree.RootAndProof`](https://pkg.go.dev/github.com/fasmat/merkle#Tree.RootAndProof).
 
 The proof can be verified using the [`ValidateProof`](https://pkg.go.dev/github.com/fasmat/merkle#ValidateProof) function.
-
-_TODO (mafa): Add a diagram illustrating proof generation and verification._
