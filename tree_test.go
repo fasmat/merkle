@@ -457,7 +457,7 @@ func BenchmarkTreeRootBalanced(b *testing.B) {
 		tree.Add(buf)
 	}
 
-	for i := 0; b.Loop(); i++ {
+	for b.Loop() {
 		tree.Root()
 	}
 }
@@ -473,7 +473,7 @@ func BenchmarkTreeRootUnBalancedSmall(b *testing.B) {
 		tree.Add(buf)
 	}
 
-	for i := 0; b.Loop(); i++ {
+	for b.Loop() {
 		tree.Root()
 	}
 }
@@ -489,7 +489,7 @@ func BenchmarkTreeRootUnBalancedBig(b *testing.B) {
 		tree.Add(buf)
 	}
 
-	for i := 0; b.Loop(); i++ {
+	for b.Loop() {
 		tree.Root()
 	}
 }
@@ -504,7 +504,7 @@ func BenchmarkTreeProofBalanced(b *testing.B) {
 		tree.Add(buf)
 	}
 
-	for i := 0; b.Loop(); i++ {
+	for b.Loop() {
 		tree.RootAndProof()
 	}
 }
@@ -519,7 +519,7 @@ func BenchmarkTreeProofUnBalancedSmall(b *testing.B) {
 		tree.Add(buf)
 	}
 
-	for i := 0; b.Loop(); i++ {
+	for b.Loop() {
 		tree.RootAndProof()
 	}
 }
@@ -534,7 +534,7 @@ func BenchmarkTreeProofUnBalancedBig(b *testing.B) {
 		tree.Add(buf)
 	}
 
-	for i := 0; b.Loop(); i++ {
+	for b.Loop() {
 		tree.RootAndProof()
 	}
 }
