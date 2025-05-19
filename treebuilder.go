@@ -38,6 +38,7 @@ func (tb *Builder) WithMinHeight(h uint64) *Builder {
 
 // WithLeafToProve sets a leaf a merkle proof should be generated for.
 // Can be called multiple times. The proof will be generated for the union of all leaves, overwriting previous ones.
+// For an example see the WithLeavesToProve method.
 func (tb *Builder) WithLeafToProve(leaf uint64) *Builder {
 	tb.leavesToProve[leaf] = struct{}{}
 	return tb

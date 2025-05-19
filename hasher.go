@@ -6,11 +6,12 @@ import (
 	"sync"
 )
 
-// Hasher is an interface for hashing two child hashes to compute a parent hash.
+// Hasher is an interface for calculating the parent node from two child nodes.
 type Hasher interface {
 	// Hash computes the hash of the given child hashes.
 	// A buffer is provided to avoid allocations. Only write to the buffer after consuming the
 	// children since it might point to the same memory as one of the child hashes.
+	// Do not modify lChild and rChild in the process of hashing, since they might be still be used after the call.
 	Hash(buf, lChild, rChild []byte) []byte
 
 	// Size returns the size of the hash in bytes.
@@ -38,7 +39,7 @@ func (s *sha256Hasher) Hash(buf, lChild, rChild []byte) []byte {
 
 // Sha256 returns a Hasher that computes the root by concatenating the two children and hashing them with SHA256.
 // It uses a sync.Pool to reuse hash.Hash instances for efficiency while still allowing multiple trees to be built
-// concurrently using the same hasher.
+// concurrently using the same underlying hasher.
 func Sha256() Hasher {
 	return &sha256Hasher{
 		pool: &sync.Pool{

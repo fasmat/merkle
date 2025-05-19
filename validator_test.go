@@ -292,10 +292,10 @@ func TestValidateProofInvalid(t *testing.T) {
 
 			valid, err := merkle.ValidateProof(root, provenLeaves, proof)
 			if !errors.Is(err, tc.err) {
-				t.Error("expected error:", tc.err)
+				t.Errorf("expected error: %v, got: %v", tc.err, err)
 			}
 			if tc.valid != valid {
-				t.Error("expected valid:", valid)
+				t.Errorf("expected valid: %t, got: %t", tc.valid, valid)
 			}
 		})
 	}
@@ -311,7 +311,7 @@ func TestValidateProofEmpty(t *testing.T) {
 
 	valid, err := merkle.ValidateProof(root, leaves, proof)
 	if !errors.Is(err, merkle.ErrNoLeaves) {
-		t.Error("expected error:", err)
+		t.Errorf("expected error: %v, got: %v", merkle.ErrNoLeaves, err)
 	}
 	if valid {
 		t.Error("expected proof to be invalid")

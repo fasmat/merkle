@@ -25,7 +25,7 @@ func ExampleNewTree() {
 	fmt.Println(rootString) // Output: 89a0f1577268cc19b0a39c7a69f804fd140640c699585eb635ebb03c06154cce
 }
 
-func TestExampleTree_Detailed(t *testing.T) {
+func TestExampleNewTree_Detailed(t *testing.T) {
 	t.Parallel()
 
 	hasher := merkle.Sha256()
@@ -109,6 +109,61 @@ func TestExampleTree_Detailed(t *testing.T) {
 			hex.EncodeToString(finalRoot),
 		)
 	}
+}
+
+func ExampleBuilder_WithLeavesToProve() {
+	// Create a set of leaves to prove
+	leavesToProve := map[uint64]struct{}{
+		0: {},
+		4: {},
+		7: {},
+	}
+	// Create a set of proven leaves
+	provenLeaves := make(map[uint64][]byte, len(leavesToProve))
+
+	// Create a new Merkle tree
+	tree := merkle.TreeBuilder().
+		WithLeavesToProve(leavesToProve).
+		Build()
+
+	// Add some data to the tree
+	b := make([]byte, tree.NodeSize())
+	for i := range 8 {
+		binary.LittleEndian.PutUint64(b, uint64(i))
+		tree.Add(b)
+
+		if _, ok := leavesToProve[uint64(i)]; ok {
+			provenLeaves[uint64(i)] = make([]byte, len(b))
+			copy(provenLeaves[uint64(i)], b)
+		}
+	}
+
+	// Print the root hash
+	root, proof := tree.RootAndProof()
+	rootString := hex.EncodeToString(root)
+	fmt.Println("root:", rootString)
+
+	// Print the proof
+	fmt.Println("proof:")
+	for i, p := range proof {
+		fmt.Printf("\t%d: %x\n", i, p)
+	}
+
+	valid, err := merkle.ValidateProof(root, provenLeaves, proof)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
+	fmt.Println("Valid:", valid)
+
+	// Output:
+	// root: 89a0f1577268cc19b0a39c7a69f804fd140640c699585eb635ebb03c06154cce
+	// proof:
+	// 	0: 0100000000000000000000000000000000000000000000000000000000000000
+	// 	1: 0094579cfc7b716038d416a311465309bea202baa922b224a7b08f01599642fb
+	// 	2: 0500000000000000000000000000000000000000000000000000000000000000
+	// 	3: 0600000000000000000000000000000000000000000000000000000000000000
+	// Valid: true
 }
 
 func TestTreeUnbalanced(t *testing.T) {

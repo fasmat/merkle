@@ -36,7 +36,6 @@ func (t *Tree) NodeSize() int {
 func (t *Tree) Add(value []byte) {
 	curNode := make([]byte, len(value))
 	copy(curNode, value)
-	curLayer := t.base
 
 	onProvingPath := false
 	if len(t.leavesToProve) > 0 && t.currentLeaf == t.leavesToProve[0] {
@@ -46,7 +45,7 @@ func (t *Tree) Add(value []byte) {
 	t.currentLeaf++
 
 	// Loop through the layers of the tree
-	for {
+	for curLayer := t.base; ; curLayer = curLayer.next {
 		// If no node is pending, then this is a left sibling
 		// add it as a parking node and keep information on if it is on the proving path
 		if curLayer.parking == nil {
@@ -87,7 +86,6 @@ func (t *Tree) Add(value []byte) {
 			// If there is no next layer, create a new one
 			curLayer.next = &layer{}
 		}
-		curLayer = curLayer.next // Move to the next layer in the tree
 	}
 }
 
@@ -138,16 +136,15 @@ func (t *Tree) RootAndProof() ([]byte, [][]byte) {
 			// either both or none are on the proving path, do not add anything to the proof
 		}
 
-		// In unbalanced trees walk up the layers by hashing the parking node and the current node together
+		// In unbalanced trees walk up the layers by hashing the current root and parking node and use as new root
+		// If either is nil, use the padding value instead
+		// If both are nil continue with next layer
 		switch {
 		case curLayer.parking != nil && root != nil:
-			// If there is a parking node and a root, hash them together for the new root
 			root = t.hasher.Hash(root, curLayer.parking, root)
 		case curLayer.parking != nil:
-			// If there is a parking node, but no root, hash it with the padding value
 			root = t.hasher.Hash(root, curLayer.parking, t.padding)
 		case root != nil:
-			// If there is a root, but no parking node, hash it with the padding value
 			root = t.hasher.Hash(root, root, t.padding)
 		}
 	}
