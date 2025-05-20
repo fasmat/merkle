@@ -233,7 +233,7 @@ func TestTreeMinHeightEqual(t *testing.T) {
 
 	tree := merkle.TreeBuilder().
 		WithHasher(concatHasher{}).
-		WithMinHeight(3).
+		WithMinHeight(4).
 		Build()
 
 	for i := range 8 {
@@ -251,7 +251,7 @@ func TestTreeMinHeightLess(t *testing.T) {
 
 	tree := merkle.TreeBuilder().
 		WithHasher(concatHasher{}).
-		WithMinHeight(2).
+		WithMinHeight(3).
 		Build()
 
 	for i := range 8 {
@@ -271,8 +271,8 @@ func TestTreeMinHeightGreater(t *testing.T) {
 		minHeight    uint64
 		expectedRoot string
 	}{
-		{4, "000102030405060700"},   // need to add one padding node to root
-		{5, "00010203040506070000"}, // need to add two padding nodes to root
+		{5, "000102030405060700"},   // need to add one padding node to root
+		{6, "00010203040506070000"}, // need to add two padding nodes to root
 	}
 
 	for _, tc := range tt {

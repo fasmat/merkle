@@ -102,7 +102,7 @@ func (t *Tree) RootAndProof() ([]byte, [][]byte) {
 		// Proof size is at least the minimum height of the tree either set by the user or
 		// calculated from the current leaf. It can be bigger with multiple leaves to prove.
 		// This sets a reasonable starting capacity for the proof slice to avoid many allocations.
-		proofLen := max(int(t.minHeight), bits.Len64(t.currentLeaf), len(t.proof))
+		proofLen := max(int(t.minHeight), bits.Len64(t.currentLeaf)-1, len(t.proof))
 		proof = make([][]byte, len(t.proof), proofLen)
 		for i, p := range t.proof {
 			proof[i] = make([]byte, len(p))
@@ -111,7 +111,7 @@ func (t *Tree) RootAndProof() ([]byte, [][]byte) {
 	}
 
 	var root []byte
-	height := -1
+	height := 0
 	onProvingPath := false
 	for curLayer := t.base; curLayer != nil; curLayer = curLayer.next {
 		height++
