@@ -4,9 +4,11 @@ import "math/bits"
 
 // Tree represents a Merkle tree.
 type Tree struct {
-	hasher Hasher
+	hasher     Hasher
+	leafHasher LeafHasher
 
 	buf     []byte // Buffer for temporary storage of hashes
+	leafBuf []byte // Buffer for temporary storage of leaf hashes
 	padding []byte // Padding for the tree
 
 	minHeight     uint64   // Minimum height of the tree
@@ -28,8 +30,7 @@ func (t *Tree) NodeSize() int {
 // Call this method for each leaf you want to add to the tree before retrieving the root hash with Root() or
 // RootAndProof().
 func (t *Tree) Add(value []byte) {
-	curNode := make([]byte, len(value))
-	copy(curNode, value)
+	curNode := t.leafHasher.Hash(t.leafBuf, value, t.parkedNodes)
 
 	// If needed, check if the current leaf is on the proving path
 	curOnProvingPath := false
@@ -52,7 +53,7 @@ func (t *Tree) Add(value []byte) {
 		// If no node is parking, then the current node is a left sibling
 		// add it as the parking node and keep information on it being on the proving path or not
 		if *parkingNode == nil {
-			*parkingNode = curNode
+			*parkingNode = append((*parkingNode)[:0], curNode...)
 			*parkingOnProvingPath = curOnProvingPath
 			break
 		}

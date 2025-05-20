@@ -49,3 +49,76 @@ func Sha256() Hasher {
 		},
 	}
 }
+
+// LeafHasher is an interface for calculating the hash of the leaf from its data and its left siblings on the path to
+// the root. This ensures that the merkle tree is built sequentially and parallelization of hashing is not possible,
+// since to add a new leaf, all the previous leaves (and their parents) must be hashed first.
+type LeafHasher interface {
+	// Hash computes the hash of the leaf from its data and its left siblings on the path to the root.
+	// A buffer is provided to avoid allocations.
+	// Do not modify the data or the siblings in the process of hashing, since they might still be used after calling
+	// this method.
+	Hash(buf, data []byte, leftSiblings [][]byte) []byte
+
+	// Size returns the size of the hash in bytes.
+	Size() int
+}
+
+type valueLeafs struct {
+	size int
+}
+
+func (v *valueLeafs) Size() int {
+	return v.size
+}
+
+func (valueLeafs) Hash(buf, data []byte, _ [][]byte) []byte {
+	buf = append(buf[:0], data...)
+	return buf
+}
+
+// ValueLeafs returns a LeafHasher that uses the added value as leaf hash. This is useful when the leaves are already
+// hashes and you want to use them as is in the tree.
+//
+// The LeafHasher will copy the data passed to Add(). For this uses a buffer of the given size. You can specify the
+// size of the buffer that is used. To avoid unnecessary re-allocations it should be large enough to hold any leaf you
+// want to add.
+func ValueLeafs(size int) LeafHasher {
+	return &valueLeafs{
+		size: size,
+	}
+}
+
+type sequentialWorkHasher struct {
+	pool *sync.Pool
+}
+
+func (sequentialWorkHasher) Size() int {
+	return sha256.Size
+}
+
+func (s *sequentialWorkHasher) Hash(buf, data []byte, parkingNodes [][]byte) []byte {
+	// Use the sync.Pool to get a hash.Hash instance. The cast is safe, since we control the pool
+	h := s.pool.Get().(hash.Hash)
+	defer s.pool.Put(h)
+	defer h.Reset()
+
+	h.Write(data)
+	for i := range parkingNodes {
+		h.Write(parkingNodes[i])
+	}
+	return h.Sum(buf[:0])
+}
+
+// SequentialWorkHasher returns a LeafHasher that computes the leaf hash by concatenating the data and the parking nodes
+// and hashing them with SHA256. It uses a sync.Pool to reuse hash.Hash instances for efficiency while still allowing
+// multiple trees to be built concurrently using the same underlying hasher.
+func SequentialWorkHasher() LeafHasher {
+	return &sequentialWorkHasher{
+		pool: &sync.Pool{
+			New: func() any {
+				return sha256.New()
+			},
+		},
+	}
+}

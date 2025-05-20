@@ -472,14 +472,15 @@ func TestTreeMultiProofUnbalanced(t *testing.T) {
 // goos: linux
 // goarch: arm64
 // pkg: github.com/fasmat/merkle
-// BenchmarkTreeAdd-10                            6146926             192.0 ns/op          32 B/op        1 allocs/op
-// BenchmarkTreeAddWithProof-10                   6249175             191.5 ns/op          32 B/op        1 allocs/op
-// BenchmarkTreeRootBalanced-10                  25668678              45.38 ns/op         32 B/op        1 allocs/op
-// BenchmarkTreeRootUnBalancedSmall-10             617647            1907 ns/op            32 B/op        1 allocs/op
-// BenchmarkTreeRootUnBalancedBig-10               567152            2080 ns/op            32 B/op        1 allocs/op
-// BenchmarkTreeProofBalanced-10                  4164111             281.2 ns/op         672 B/op       13 allocs/op
-// BenchmarkTreeProofUnBalancedSmall-10            511286            2222 ns/op          1104 B/op       14 allocs/op
-// BenchmarkTreeProofUnBalancedBig-10              465728            2438 ns/op          1280 B/op       15 allocs/op
+// BenchmarkTreeAdd-10                            6105746             198.0 ns/op          32 B/op        1 allocs/op
+// BenchmarkTreeAddWithProof-10                   6022267             193.9 ns/op          32 B/op        1 allocs/op
+// BenchmarkTreeRootBalanced-10                  25637509              45.70 ns/op         32 B/op        1 allocs/op
+// BenchmarkTreeRootUnBalancedSmall-10             627519            1909 ns/op            32 B/op        1 allocs/op
+// BenchmarkTreeRootUnBalancedBig-10               574809            2086 ns/op            32 B/op        1 allocs/op
+// BenchmarkTreeProofBalanced-10                  4081146             291.6 ns/op         672 B/op       13 allocs/op
+// BenchmarkTreeProofUnBalancedSmall-10            496874            2242 ns/op          1104 B/op       14 allocs/op
+// BenchmarkTreeProofUnBalancedBig-10              439239            2457 ns/op          1280 B/op       15 allocs/op
+// BenchmarkSequentialWorkHasher-10               1760858             693.0 ns/op          32 B/op        1 allocs/op
 // PASS
 
 func BenchmarkTreeAdd(b *testing.B) {
@@ -591,5 +592,16 @@ func BenchmarkTreeProofUnBalancedBig(b *testing.B) {
 
 	for b.Loop() {
 		tree.RootAndProof()
+	}
+}
+
+func BenchmarkSequentialWorkHasher(b *testing.B) {
+	tree := merkle.TreeBuilder().
+		WithLeafHasher(merkle.SequentialWorkHasher()).
+		Build()
+	buf := make([]byte, tree.NodeSize())
+	for i := 0; b.Loop(); i++ {
+		binary.LittleEndian.PutUint64(buf, uint64(i))
+		tree.Add(buf)
 	}
 }
