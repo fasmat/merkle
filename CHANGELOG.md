@@ -1,5 +1,9 @@
 # merkle Changelog
 
+## v0.3.0 (unreleased)
+
+* feat: add option to use proof of sequential work when building the tree, for details see readme and godoc
+
 ## v0.2.1 (2025-05-20)
 
 * chore: use slices instead of objects to track parked nodes

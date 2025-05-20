@@ -35,3 +35,7 @@ You can generate a Merkle proof for one or more leaves using [`Builder.WithLeafT
 The proof is constructed by collecting the sibling hashes of nodes that cannot be derived solely from the proven leaves. These hashes are returned in the order necessary to verify the inclusion path back to the root, as produced by [`Tree.RootAndProof`](https://pkg.go.dev/github.com/fasmat/merkle#Tree.RootAndProof).
 
 The proof can be verified using the [`ValidateProof`](https://pkg.go.dev/github.com/fasmat/merkle#ValidateProof) function.
+
+### Custom Leaf Hashing and Proof of Sequential Work
+
+_TODO(mafa):_ update this section
