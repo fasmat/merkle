@@ -1,6 +1,6 @@
 # merkle Changelog
 
-## v0.3.0 (unreleased)
+## v0.2.1 (2025-05-20)
 
 * chore: use slices instead of objects to track parked nodes
 * ci: add release workflow to automatically create a release on tag
