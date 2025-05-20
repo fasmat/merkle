@@ -4,24 +4,18 @@ import "math/bits"
 
 // Tree represents a Merkle tree.
 type Tree struct {
-	hasher    Hasher
-	buf       []byte // Buffer for temporary storage of hashes
-	padding   []byte // Padding for the tree
-	minHeight uint64 // Minimum height of the tree
+	hasher Hasher
 
-	base *layer // The base layer of the tree (the leafs)
+	buf     []byte // Buffer for temporary storage of hashes
+	padding []byte // Padding for the tree
 
-	currentLeaf   uint64   // The current leaf index
+	minHeight     uint64   // Minimum height of the tree
 	leavesToProve []uint64 // leavesToProve is sorted set of indices of leaves to prove
+
+	parkedNodes   [][]byte // The parked nodes of the tree
+	onProvingPath []bool   // Indicates if the parked nodes are on the proving path
+	currentLeaf   uint64   // The current leaf index
 	proof         [][]byte // The proof of the leaves to prove
-}
-
-// layer represents a layer in the Merkle tree.
-type layer struct {
-	parking       []byte // The node that is pending for hashing, if any
-	onProvingPath bool   // Indicates if this layer is on the proving path
-
-	next *layer // The next layer in the tree
 }
 
 // NodeSize returns the length of the hash used for the nodes in the tree.
@@ -37,38 +31,43 @@ func (t *Tree) Add(value []byte) {
 	curNode := make([]byte, len(value))
 	copy(curNode, value)
 
-	onProvingPath := false
+	// If needed, check if the current leaf is on the proving path
+	curOnProvingPath := false
 	if len(t.leavesToProve) > 0 && t.currentLeaf == t.leavesToProve[0] {
-		onProvingPath = true
+		curOnProvingPath = true
 		t.leavesToProve = t.leavesToProve[1:]
 	}
 	t.currentLeaf++
 
-	// Loop through the layers of the tree
-	for curLayer := t.base; ; curLayer = curLayer.next {
-		// If no node is pending, then this is a left sibling
-		// add it as a parking node and keep information on if it is on the proving path
-		if curLayer.parking == nil {
-			curLayer.parking = curNode
-			curLayer.onProvingPath = onProvingPath
+	// Loop through the layers (parked nodes) of the tree
+	for height := 0; ; height++ {
+		// If there is no layer at current height, add one
+		if height == len(t.parkedNodes) {
+			t.parkedNodes = append(t.parkedNodes, nil)
+			t.onProvingPath = append(t.onProvingPath, false)
+		}
+		parkingNode := &t.parkedNodes[height]
+		parkingOnProvingPath := &t.onProvingPath[height]
+
+		// If no node is parking, then the current node is a left sibling
+		// add it as the parking node and keep information on it being on the proving path or not
+		if *parkingNode == nil {
+			*parkingNode = curNode
+			*parkingOnProvingPath = curOnProvingPath
 			break
 		}
 
-		// If the parking node is not nil, then we have a right sibling
-
-		// If the left or right child is on the proving path, we need to add the other child to the proof
-		leftChildOnPath := curLayer.onProvingPath
-		rightChildOnPath := onProvingPath
+		// If the parking node is not nil, then the current node is a right sibling
 		switch {
-		case leftChildOnPath && !rightChildOnPath:
+		case *parkingOnProvingPath && !curOnProvingPath:
 			// add the right child (current node) to the proof
 			proofNode := make([]byte, len(curNode))
 			copy(proofNode, curNode)
 			t.proof = append(t.proof, proofNode)
-		case !leftChildOnPath && rightChildOnPath:
+		case !*parkingOnProvingPath && curOnProvingPath:
 			// add the left child (parking node) to the proof
-			proofNode := make([]byte, len(curLayer.parking))
-			copy(proofNode, curLayer.parking)
+			proofNode := make([]byte, len(*parkingNode))
+			copy(proofNode, *parkingNode)
 			t.proof = append(t.proof, proofNode)
 		default:
 			// either both or none are on the proving path
@@ -77,15 +76,11 @@ func (t *Tree) Add(value []byte) {
 
 		// Hash the parking node (left child) and the current node (right child) together
 		// store the result in the current node and move to the next layer
-		root := t.hasher.Hash(t.buf, curLayer.parking, curNode)
+		root := t.hasher.Hash(t.buf, *parkingNode, curNode)
 		curNode = append(curNode[:0], root...)
-		onProvingPath = leftChildOnPath || rightChildOnPath
-		curLayer.parking = nil
-		curLayer.onProvingPath = false
-		if curLayer.next == nil {
-			// If there is no next layer, create a new one
-			curLayer.next = &layer{}
-		}
+		curOnProvingPath = *parkingOnProvingPath || curOnProvingPath
+		*parkingNode = nil
+		*parkingOnProvingPath = false
 	}
 }
 
@@ -111,26 +106,24 @@ func (t *Tree) RootAndProof() ([]byte, [][]byte) {
 	}
 
 	var root []byte
-	height := 0
 	onProvingPath := false
-	for curLayer := t.base; curLayer != nil; curLayer = curLayer.next {
-		height++
+	for height, parkedNode := range t.parkedNodes {
 		// If this is a balanced tree, the parking node is the root and the proof is complete
-		if curLayer.parking != nil && root == nil && curLayer.next == nil {
-			root = append(root[:0], curLayer.parking...) // Copy the parking node to the root
+		if parkedNode != nil && root == nil && height == len(t.parkedNodes)-1 {
+			root = append(root[:0], parkedNode...) // Copy the parking node to the root
 			break
 		}
 
 		// Otherwise check if we are on the proving path and need to add one of the nodes to the proof
 		switch {
-		case curLayer.onProvingPath && !onProvingPath:
+		case t.onProvingPath[height] && !onProvingPath:
 			proofNode := make([]byte, t.hasher.Size())
 			copy(proofNode, root)
 			proof = append(proof, proofNode)
 			onProvingPath = true
-		case onProvingPath && !curLayer.onProvingPath:
+		case onProvingPath && !t.onProvingPath[height]:
 			proofNode := make([]byte, t.hasher.Size())
-			copy(proofNode, curLayer.parking)
+			copy(proofNode, parkedNode)
 			proof = append(proof, proofNode)
 		default:
 			// either both or none are on the proving path, do not add anything to the proof
@@ -140,16 +133,16 @@ func (t *Tree) RootAndProof() ([]byte, [][]byte) {
 		// If either is nil, use the padding value instead
 		// If both are nil continue with next layer
 		switch {
-		case curLayer.parking != nil && root != nil:
-			root = t.hasher.Hash(root, curLayer.parking, root)
-		case curLayer.parking != nil:
-			root = t.hasher.Hash(root, curLayer.parking, t.padding)
+		case parkedNode != nil && root != nil:
+			root = t.hasher.Hash(root, parkedNode, root)
+		case parkedNode != nil:
+			root = t.hasher.Hash(root, parkedNode, t.padding)
 		case root != nil:
 			root = t.hasher.Hash(root, root, t.padding)
 		}
 	}
 	// If the height is less than the minimum height, add padding nodes
-	for i := uint64(height); i < t.minHeight; i++ {
+	for i := uint64(len(t.parkedNodes)); i < t.minHeight; i++ {
 		root = t.hasher.Hash(root, root, t.padding)
 		proof = append(proof, t.padding)
 	}

@@ -60,12 +60,12 @@ func (tb *Builder) Build() *Tree {
 	indices := slices.Collect(maps.Keys(tb.leavesToProve))
 	slices.Sort(indices)
 	tree := &Tree{
-		hasher:    tb.hasher,
-		buf:       make([]byte, tb.hasher.Size()),
-		padding:   make([]byte, tb.hasher.Size()),
-		minHeight: tb.minHeight,
+		hasher: tb.hasher,
 
-		base:          &layer{},
+		buf:     make([]byte, tb.hasher.Size()),
+		padding: make([]byte, tb.hasher.Size()),
+
+		minHeight:     tb.minHeight,
 		leavesToProve: indices,
 	}
 	return tree

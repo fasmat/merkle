@@ -472,14 +472,14 @@ func TestTreeMultiProofUnbalanced(t *testing.T) {
 // goos: linux
 // goarch: arm64
 // pkg: github.com/fasmat/merkle
-// BenchmarkTreeAdd-10                        11709153           102.7 ns/op            32 B/op          1 allocs/op
-// BenchmarkTreeAddWithProof-10               11546602           102.8 ns/op            32 B/op          1 allocs/op
-// BenchmarkTreeRootBalanced-10               55411255            32.43 ns/op           32 B/op          1 allocs/op
-// BenchmarkTreeRootUnBalancedSmall-10         1253310           957.2 ns/op            32 B/op          1 allocs/op
-// BenchmarkTreeRootUnBalancedBig-10           1000000          1046 ns/op              32 B/op          1 allocs/op
-// BenchmarkTreeProofBalanced-10               4586818           273.2 ns/op           672 B/op         13 allocs/op
-// BenchmarkTreeProofUnBalancedSmall-10        1000000          1185 ns/op             672 B/op         13 allocs/op
-// BenchmarkTreeProofUnBalancedBig-10           837196          1307 ns/op             704 B/op         14 allocs/op
+// BenchmarkTreeAdd-10                            6146926             192.0 ns/op          32 B/op        1 allocs/op
+// BenchmarkTreeAddWithProof-10                   6249175             191.5 ns/op          32 B/op        1 allocs/op
+// BenchmarkTreeRootBalanced-10                  25668678              45.38 ns/op         32 B/op        1 allocs/op
+// BenchmarkTreeRootUnBalancedSmall-10             617647            1907 ns/op            32 B/op        1 allocs/op
+// BenchmarkTreeRootUnBalancedBig-10               567152            2080 ns/op            32 B/op        1 allocs/op
+// BenchmarkTreeProofBalanced-10                  4164111             281.2 ns/op         672 B/op       13 allocs/op
+// BenchmarkTreeProofUnBalancedSmall-10            511286            2222 ns/op          1104 B/op       14 allocs/op
+// BenchmarkTreeProofUnBalancedBig-10              465728            2438 ns/op          1280 B/op       15 allocs/op
 // PASS
 
 func BenchmarkTreeAdd(b *testing.B) {

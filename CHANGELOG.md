@@ -2,6 +2,7 @@
 
 ## v0.3.0 (unreleased)
 
+* chore: use slices instead of objects to track parked nodes
 * docs: improve godoc comments and add more examples
 * docs: add CHANGELOG.md to the repository
 * fix: TreeBuilder().WithMinHeight() now works correctly, before it was off by one
