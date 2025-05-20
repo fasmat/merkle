@@ -35,8 +35,8 @@ func (tb *Builder) WithHasher(h Hasher) *Builder {
 // It can be used when some form of Proof of Sequential Work (PoSW) is needed when building the tree. For details
 // see the LeafHasher interface.
 //
-// Generally, if no Proof of Sequential Work is needed it is recommended to either add the leaves as is or manually
-// hash them before adding them to the tree.
+// If no Proof of Sequential Work is needed it is recommended to either add the leaves as is or manually hash them
+// before adding them to the tree.
 func (tb *Builder) WithLeafHasher(h LeafHasher) *Builder {
 	tb.leafHasher = h
 	return tb
