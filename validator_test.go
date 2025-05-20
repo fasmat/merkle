@@ -187,7 +187,12 @@ func TestValidateMultiProofUnbalanced(t *testing.T) {
 	}
 }
 
-func TestValidateCustomHasher(t *testing.T) {
+// TODO(mafa): add TestValidateProofSequentialWork
+// TODO(mafa): add TestValidateMultiProofSequentialWork
+// TODO(mafa): add TestValidateProofUnbalancedSequentialWork
+// TODO(mafa): add TestValidateMultiProofUnbalancedSequentialWork
+
+func TestValidateWithHasher(t *testing.T) {
 	t.Parallel()
 
 	leaves := make(map[uint64][]byte)
@@ -207,6 +212,8 @@ func TestValidateCustomHasher(t *testing.T) {
 		t.Error("proof is not valid")
 	}
 }
+
+// TODO(mafa): add TestValidateWithLeafHasher
 
 func TestValidateProofInvalid(t *testing.T) {
 	t.Parallel()
@@ -323,9 +330,11 @@ func TestValidateProofEmpty(t *testing.T) {
 // goos: linux
 // goarch: arm64
 // pkg: github.com/fasmat/merkle
-// BenchmarkValidateProof-10         	  956352	      1191 ns/op	    1673 B/op	       7 allocs/op
-// BenchmarkValidateMultiProof-10    	  706333	      1709 ns/op	    1752 B/op	      10 allocs/op
+// BenchmarkValidateProof-10                 977810              1216 ns/op            1721 B/op          9 allocs/op
+// BenchmarkValidateMultiProof-10            601164              1798 ns/op            1933 B/op         17 allocs/op
 // PASS
+
+// TODO(mafa): check if number of allocations can be reduced when sequential work is not used
 
 func BenchmarkValidateProof(b *testing.B) {
 	leaves := make(map[uint64][]byte)
@@ -358,6 +367,9 @@ func BenchmarkValidateMultiProof(b *testing.B) {
 		merkle.ValidateProof(root, leaves, proof) //nolint:errcheck
 	}
 }
+
+// TODO(mafa): add BenchmarkValidateProofSequentialWork
+// TODO(mafa): add BenchmarkValidateMultiProofSequentialWork
 
 func FuzzValidate(f *testing.F) {
 	// This fuzz test is used to ensure that the ValidateProof function does not panic
@@ -453,3 +465,5 @@ func FuzzBuildAndValidateProof(f *testing.F) {
 		}
 	})
 }
+
+// TODO(mafa): add FuzzBuildAndValidateProofSequentialWork

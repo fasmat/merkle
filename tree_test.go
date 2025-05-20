@@ -166,6 +166,8 @@ func ExampleBuilder_WithLeavesToProve() {
 	// Valid: true
 }
 
+// TODO(mafa): add TestExampleBuilder_WithLeavesToProve_Detailed
+
 func TestTreeUnbalanced(t *testing.T) {
 	t.Parallel()
 
@@ -467,20 +469,25 @@ func TestTreeMultiProofUnbalanced(t *testing.T) {
 	}
 }
 
+// TODO(mafa): add TestTreeProofSequentialWork
+// TODO(mafa): add TestTreeMultiProofSequentialWork
+// TODO(mafa): add TestTreeProofUnbalancedSequentialWork
+// TODO(mafa): add TestTreeMultiProofUnbalancedSequentialWork
+
 // Benchmark results
 //
 // goos: linux
 // goarch: arm64
 // pkg: github.com/fasmat/merkle
-// BenchmarkTreeAdd-10                            6105746             198.0 ns/op          32 B/op        1 allocs/op
-// BenchmarkTreeAddWithProof-10                   6022267             193.9 ns/op          32 B/op        1 allocs/op
-// BenchmarkTreeRootBalanced-10                  25637509              45.70 ns/op         32 B/op        1 allocs/op
-// BenchmarkTreeRootUnBalancedSmall-10             627519            1909 ns/op            32 B/op        1 allocs/op
-// BenchmarkTreeRootUnBalancedBig-10               574809            2086 ns/op            32 B/op        1 allocs/op
-// BenchmarkTreeProofBalanced-10                  4081146             291.6 ns/op         672 B/op       13 allocs/op
-// BenchmarkTreeProofUnBalancedSmall-10            496874            2242 ns/op          1104 B/op       14 allocs/op
-// BenchmarkTreeProofUnBalancedBig-10              439239            2457 ns/op          1280 B/op       15 allocs/op
-// BenchmarkSequentialWorkHasher-10               1760858             693.0 ns/op          32 B/op        1 allocs/op
+// BenchmarkTreeAdd-10                            6180907             198.2 ns/op          32 B/op        1 allocs/op
+// BenchmarkTreeAddWithProof-10                   5955980             195.7 ns/op          32 B/op        1 allocs/op
+// BenchmarkTreeRootBalanced-10                  23883130              45.61 ns/op         32 B/op        1 allocs/op
+// BenchmarkTreeRootUnbalancedSmall-10             617790            1911 ns/op            32 B/op        1 allocs/op
+// BenchmarkTreeRootUnbalancedBig-10               571573            2120 ns/op            32 B/op        1 allocs/op
+// BenchmarkTreeProofBalanced-10                  3861918             305.8 ns/op         672 B/op       13 allocs/op
+// BenchmarkTreeProofUnbalancedSmall-10            506768            2366 ns/op          1104 B/op       14 allocs/op
+// BenchmarkTreeProofUnbalancedBig-10              468398            2527 ns/op          1280 B/op       15 allocs/op
+// BenchmarkTreeAddSequentialWork-10              1757840             695.8 ns/op          32 B/op        1 allocs/op
 // PASS
 
 func BenchmarkTreeAdd(b *testing.B) {
@@ -518,7 +525,7 @@ func BenchmarkTreeRootBalanced(b *testing.B) {
 	}
 }
 
-func BenchmarkTreeRootUnBalancedSmall(b *testing.B) {
+func BenchmarkTreeRootUnbalancedSmall(b *testing.B) {
 	tree := merkle.NewTree()
 	buf := make([]byte, tree.NodeSize())
 
@@ -534,7 +541,7 @@ func BenchmarkTreeRootUnBalancedSmall(b *testing.B) {
 	}
 }
 
-func BenchmarkTreeRootUnBalancedBig(b *testing.B) {
+func BenchmarkTreeRootUnbalancedBig(b *testing.B) {
 	tree := merkle.NewTree()
 	buf := make([]byte, tree.NodeSize())
 
@@ -565,7 +572,7 @@ func BenchmarkTreeProofBalanced(b *testing.B) {
 	}
 }
 
-func BenchmarkTreeProofUnBalancedSmall(b *testing.B) {
+func BenchmarkTreeProofUnbalancedSmall(b *testing.B) {
 	tree := merkle.TreeBuilder().
 		WithLeafToProve(1001).
 		Build()
@@ -580,7 +587,7 @@ func BenchmarkTreeProofUnBalancedSmall(b *testing.B) {
 	}
 }
 
-func BenchmarkTreeProofUnBalancedBig(b *testing.B) {
+func BenchmarkTreeProofUnbalancedBig(b *testing.B) {
 	tree := merkle.TreeBuilder().
 		WithLeafToProve(1000).
 		Build()
@@ -595,7 +602,7 @@ func BenchmarkTreeProofUnBalancedBig(b *testing.B) {
 	}
 }
 
-func BenchmarkSequentialWorkHasher(b *testing.B) {
+func BenchmarkTreeAddSequentialWork(b *testing.B) {
 	tree := merkle.TreeBuilder().
 		WithLeafHasher(merkle.SequentialWorkHasher()).
 		Build()
