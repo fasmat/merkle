@@ -6,14 +6,14 @@
 * ci: add release workflow to automatically create a release on tag
 * docs: improve godoc comments and add more examples
 * docs: add CHANGELOG.md to the repository
-* fix: TreeBuilder().WithMinHeight() now works correctly, before it was off by one
+* fix: `TreeBuilder().WithMinHeight()` now works correctly, before it was off by one
 
 ## v0.2.0 (2025-05-18)
 
 * chore: added more tests to increase coverage
 * chore: added benchmarks to track performance
 * chore: optimized the code for better performance
-* ci: code coverage is now tracked by codecov
+* ci: code coverage is now tracked by `codecov`
 * docs: updated README.md with more information and animation of the merkle tree
 * feat: added a new functionality to create and verify merkle proofs
 
