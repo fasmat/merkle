@@ -7,8 +7,10 @@ on:
       - '*'
 
 jobs:
-  build:
+  release:
     runs-on: ubuntu-24.04
+    permissions:
+        contents: write
     steps:
       - name: Create Release
         uses: softprops/action-gh-release@v2
