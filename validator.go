@@ -106,7 +106,8 @@ func (v *validator) parkingNodes(maxHeight uint64) [][]byte {
 			return parkingNodes
 		}
 		if int(height) >= len(v.proof) {
-			// this happens when the proof is too short and will be handled in calcRoot by returning an error
+			// this either means that we are missing proof nodes or that those will be calculated
+			// by the calcRoot method, either way it's handled there
 			return nil
 		}
 		if curIndex&1 == 1 {

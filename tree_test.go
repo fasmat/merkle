@@ -40,7 +40,7 @@ func TestExampleNewTree_Detailed(t *testing.T) {
 	if rootString != "cb592844121d926f1ca3ad4e1d6fb9d8e260ed6e3216361f7732e975a0e8bbf6" {
 		t.Errorf(
 			"Expected hash to be cb592844121d926f1ca3ad4e1d6fb9d8e260ed6e3216361f7732e975a0e8bbf6, got %s",
-			hex.EncodeToString(root1),
+			rootString,
 		)
 	}
 
@@ -52,7 +52,7 @@ func TestExampleNewTree_Detailed(t *testing.T) {
 	if rootString != "0094579cfc7b716038d416a311465309bea202baa922b224a7b08f01599642fb" {
 		t.Errorf(
 			"Expected hash to be 0094579cfc7b716038d416a311465309bea202baa922b224a7b08f01599642fb, got %s",
-			hex.EncodeToString(root2),
+			rootString,
 		)
 	}
 
@@ -64,7 +64,7 @@ func TestExampleNewTree_Detailed(t *testing.T) {
 	if rootString != "bd50456d5ad175ae99a1612a53ca229124b65d3eaabd9ff9c7ab979a385cf6b3" {
 		t.Errorf(
 			"Expected hash to be bd50456d5ad175ae99a1612a53ca229124b65d3eaabd9ff9c7ab979a385cf6b3, got %s",
-			hex.EncodeToString(root3),
+			rootString,
 		)
 	}
 
@@ -76,7 +76,7 @@ func TestExampleNewTree_Detailed(t *testing.T) {
 	if rootString != "fa670379e5c2212ed93ff09769622f81f98a91e1ec8fb114d607dd25220b9088" {
 		t.Errorf(
 			"Expected hash to be fa670379e5c2212ed93ff09769622f81f98a91e1ec8fb114d607dd25220b9088, got %s",
-			hex.EncodeToString(root4),
+			rootString,
 		)
 	}
 
@@ -86,7 +86,7 @@ func TestExampleNewTree_Detailed(t *testing.T) {
 	if rootString != "ba94ffe7edabf26ef12736f8eb5ce74d15bedb6af61444ae2906e926b1a95084" {
 		t.Errorf(
 			"Expected hash to be ba94ffe7edabf26ef12736f8eb5ce74d15bedb6af61444ae2906e926b1a95084, got %s",
-			hex.EncodeToString(firstRoot),
+			rootString,
 		)
 	}
 
@@ -96,7 +96,7 @@ func TestExampleNewTree_Detailed(t *testing.T) {
 	if rootString != "633b26ee8a5d96d49a4861e9a5720492f0db5b6af305c0b5cfcc6a7ec9b676d4" {
 		t.Errorf(
 			"Expected hash to be 633b26ee8a5d96d49a4861e9a5720492f0db5b6af305c0b5cfcc6a7ec9b676d4, got %s",
-			hex.EncodeToString(secondRoot),
+			rootString,
 		)
 	}
 
@@ -106,7 +106,7 @@ func TestExampleNewTree_Detailed(t *testing.T) {
 	if rootString != "89a0f1577268cc19b0a39c7a69f804fd140640c699585eb635ebb03c06154cce" {
 		t.Errorf(
 			"Expected hash to be 89a0f1577268cc19b0a39c7a69f804fd140640c699585eb635ebb03c06154cce, got %s",
-			hex.EncodeToString(finalRoot),
+			rootString,
 		)
 	}
 }
@@ -165,8 +165,6 @@ func ExampleBuilder_WithLeavesToProve() {
 	// 	3: 0600000000000000000000000000000000000000000000000000000000000000
 	// Valid: true
 }
-
-// TODO(mafa): add TestExampleBuilder_WithLeavesToProve_Detailed
 
 func TestTreeUnbalanced(t *testing.T) {
 	t.Parallel()
@@ -469,7 +467,44 @@ func TestTreeMultiProofUnbalanced(t *testing.T) {
 	}
 }
 
-// TODO(mafa): add TestTreeProofSequentialWork
+func TestTreeProofSequentialWork(t *testing.T) {
+	t.Parallel()
+
+	tree := merkle.TreeBuilder().
+		WithLeafHasher(merkle.SequentialWorkHasher()).
+		WithLeafToProve(4).
+		Build()
+	buf := make([]byte, tree.NodeSize())
+	for i := range 8 {
+		binary.LittleEndian.PutUint64(buf, uint64(i))
+		tree.Add(buf)
+	}
+
+	root, proof := tree.RootAndProof()
+	rootString := hex.EncodeToString(root)
+	if rootString != "02ce397ec513f034dd6ec5dce3cdb8bfcf10f400a9979cb03abf52d3b5f6c88b" {
+		t.Errorf(
+			"Expected hash to be 02ce397ec513f034dd6ec5dce3cdb8bfcf10f400a9979cb03abf52d3b5f6c88b, got %s",
+			rootString,
+		)
+	}
+
+	expectedProof := []string{
+		"03085fced9119406c955dc302885a509bf81972ead5fb8b1d87dd3308f9830a2",
+		"64276da1ef80b4d466e654c5808c4ea3f2c57dda04499e0f495ac4593c746993",
+		"c3831849e0ae67538cb54a4de0729118685c41822f714f7c466ee641380d01db",
+	}
+	if len(proof) != len(expectedProof) {
+		t.Fatalf("Expected proof to be of length %d, got %d", len(expectedProof), len(proof))
+	}
+	for i, p := range proof {
+		pString := hex.EncodeToString(p)
+		if pString != expectedProof[i] {
+			t.Errorf("Expected proof[%d] to be %s, got %s", i, expectedProof[i], pString)
+		}
+	}
+}
+
 // TODO(mafa): add TestTreeMultiProofSequentialWork
 // TODO(mafa): add TestTreeProofUnbalancedSequentialWork
 // TODO(mafa): add TestTreeMultiProofUnbalancedSequentialWork
