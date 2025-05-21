@@ -94,7 +94,9 @@ func ValidateProof(root []byte, leaves map[uint64][]byte, proof [][]byte, opts .
 		parkedNodes: parkedNodes,
 		proof:       proof,
 	}
-	v.parkingNodes(math.MaxUint64)
+	if err := v.parkingNodes(math.MaxUint64); err != nil {
+		return false, err
+	}
 
 	buf := make([]byte, 0, v.leafHasher.Size())
 	calculatedRoot, err := v.calcRoot(math.MaxUint64, buf)
@@ -115,25 +117,43 @@ type validator struct {
 }
 
 // parkingNodes returns the parking nodes from the proof for the current subtree with the given max height.
-func (v *validator) parkingNodes(maxHeight uint64) {
+func (v *validator) parkingNodes(maxHeight uint64) error {
+	proofIdx := uint64(0)
+	curNodeIdx := v.indices[0]
+	siblings := v.indices[1:]
 	for height := range maxHeight {
-		firstIndex := v.indices[0] >> height
 		switch {
-		case firstIndex == 0:
+		case curNodeIdx == 0:
 			// from here on out going up the tree we are always a left sibling, so no more parked nodes
-			return
-		case firstIndex&1 == 0:
+			return nil
+		case curNodeIdx&1 == 0 && len(siblings) > 0 && (siblings[0]>>height) == (curNodeIdx^1):
+			// the subtree with the current height is a left sibling and
+			// the next index is part of the subtree forming the right sibling
+			v.parkedNodes[height] = v.parkedNodes[height][:0]
+			proofIdx += height
+			siblings = siblings[1:]
+			for len(siblings) > 0 && (siblings[0]>>height) == (curNodeIdx^1) {
+				// for every additional leaf in the subtree we have one additional parked node
+				proofIdx--
+				siblings = siblings[1:]
+			}
+		case curNodeIdx&1 == 0:
 			// the subtree with the current height is a left sibling, so at this height there is no parked node
 			v.parkedNodes[height] = v.parkedNodes[height][:0]
-		case firstIndex&1 == 1:
+			proofIdx++
+		case curNodeIdx&1 == 1:
 			// the subtree with the current hight is a right sibling
 			// so the proof at this height contains the left sibling which we need as the parked node
-			if int(height) >= len(v.proof) {
-				return // no more proof nodes to park
+			if proofIdx >= uint64(len(v.proof)) {
+				// if we are missing proof nodes we can't calculate
+				return ErrShortProof
 			}
-			v.parkedNodes[height] = append(v.parkedNodes[height][:0], v.proof[height]...)
+			v.parkedNodes[height] = append(v.parkedNodes[height][:0], v.proof[proofIdx]...)
+			proofIdx++
 		}
+		curNodeIdx >>= 1
 	}
+	return nil
 }
 
 // calcRoot calculates the root of the Merkle tree using the provided leaves and proof.
@@ -167,7 +187,9 @@ func (v *validator) calcRoot(maxHeight uint64, rootBuf []byte) ([]byte, error) {
 
 			// the current node at the current height is the left sibling of the subtree we will process
 			// so it is a parked node for all leafs in the subtree and we need to copy it
-			v.parkingNodes(height)
+			if err := v.parkingNodes(height); err != nil {
+				return nil, err
+			}
 			v.parkedNodes[height] = append(v.parkedNodes[height][:0], curNode...)
 
 			sibling, err := v.calcRoot(height, siblingBuf)

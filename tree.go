@@ -1,6 +1,8 @@
 package merkle
 
-import "math/bits"
+import (
+	"math/bits"
+)
 
 // Tree represents a Merkle tree.
 type Tree struct {
