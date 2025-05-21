@@ -432,13 +432,15 @@ func FuzzValidate(f *testing.F) {
 	// even when given invalid input.
 
 	// Add a few test cases to the fuzzing function
-	f.Add([]byte{}, uint64(0), uint64(0))
-	f.Add([]byte{0x00}, uint64(1), uint64(1000))
-	f.Add([]byte{0x01}, uint64(1000), uint64(1))
+	f.Add([]byte{}, []byte{0x00})
+	f.Add([]byte{0x00}, []byte{0x00, 0x00})
+	f.Add([]byte{0x01}, []byte{0x00, 0x01})
 
-	f.Fuzz(func(_ *testing.T, root []byte, seed1, seed2 uint64) {
-		pcg := rand.NewPCG(seed1, seed2)
-		rng := rand.New(pcg)
+	f.Fuzz(func(_ *testing.T, root, seed []byte) {
+		var chaChaSeed [32]byte
+		copy(chaChaSeed[:], seed)
+		rngSrc := rand.NewChaCha8(chaChaSeed)
+		rng := rand.New(rngSrc)
 
 		// Generate a random number of leaves
 		numLeaves := rng.IntN(1000)
@@ -447,9 +449,6 @@ func FuzzValidate(f *testing.F) {
 			// Generate a random leaf
 			leaf := make([]byte, 32)
 			binary.BigEndian.PutUint64(leaf, rng.Uint64())
-			binary.BigEndian.PutUint64(leaf[8:], rng.Uint64())
-			binary.BigEndian.PutUint64(leaf[16:], rng.Uint64())
-			binary.BigEndian.PutUint64(leaf[24:], rng.Uint64())
 			leaves[rand.Uint64()] = leaf
 		}
 
@@ -460,9 +459,6 @@ func FuzzValidate(f *testing.F) {
 			// Generate a random proof node
 			proofNode := make([]byte, 32)
 			binary.BigEndian.PutUint64(proofNode, rng.Uint64())
-			binary.BigEndian.PutUint64(proofNode[8:], rng.Uint64())
-			binary.BigEndian.PutUint64(proofNode[16:], rng.Uint64())
-			binary.BigEndian.PutUint64(proofNode[24:], rng.Uint64())
 			proof[i] = proofNode
 		}
 
@@ -475,23 +471,34 @@ func FuzzBuildAndValidateProof(f *testing.F) {
 	// with the ValidateProof function.
 
 	// Add a few test cases to the fuzzing function
-	f.Add(uint64(2), uint64(1))
-	f.Add(uint64(1000), uint64(1000))
-	f.Add(uint64(2000), uint64(440))
+	f.Add(uint64(2), uint64(1), []byte{0x00})
+	f.Add(uint64(1000), uint64(1000), []byte{0x01})
+	f.Add(uint64(17), uint64(7), []byte{0x02}) // TODO(mafa): fails with sequential work hasher
 
-	f.Fuzz(func(t *testing.T, numLeaves, numLeavesToProve uint64) {
+	f.Fuzz(func(t *testing.T, numLeaves, numLeavesToProve uint64, seed []byte) {
 		if numLeaves == 0 || numLeavesToProve == 0 {
 			t.Skip("numLeaves and numLeavesToProve must be greater than 0")
 		}
 		if numLeaves < numLeavesToProve {
 			t.Skip("numLeaves must be greater than numLeavesToProve")
 		}
+
+		var chaChaSeed [32]byte
+		copy(chaChaSeed[:], seed)
+		rngSrc := rand.NewChaCha8(chaChaSeed)
+		rng := rand.New(rngSrc)
 		leavesToProve := make(map[uint64]struct{}, numLeavesToProve)
 
-		idx := float64(numLeaves)/float64(numLeavesToProve) - 1
-		for range int(numLeavesToProve) {
-			leavesToProve[uint64(idx)] = struct{}{}
-			idx += float64(numLeaves) / float64(numLeavesToProve)
+		leafIndices := make([]uint64, numLeaves)
+		for i := range numLeaves {
+			leafIndices[i] = i
+		}
+		rng.Shuffle(int(numLeaves), func(i, j int) {
+			leafIndices[i], leafIndices[j] = leafIndices[j], leafIndices[i]
+		})
+		leafIndices = leafIndices[:numLeavesToProve]
+		for _, i := range leafIndices {
+			leavesToProve[i] = struct{}{}
 		}
 		leaves := make(map[uint64][]byte, numLeaves)
 
