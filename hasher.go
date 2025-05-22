@@ -50,15 +50,20 @@ func Sha256() Hasher {
 	}
 }
 
-// LeafHasher is an interface for calculating the hash of the leaf from its data and its left siblings on the path to
-// the root. This ensures that the merkle tree is built sequentially and parallelization of hashing is not possible,
-// since to add a new leaf, all the previous leaves (and their parents) must be hashed first.
+// LeafHasher is an interface for calculating the hash of the leaf from its data and (optionally) from its left siblings
+// on the path to the root.
+// Hashing the left siblings ensures that the merkle tree is built sequentially and parallelization of hashing is not
+// possible, since to add a new leaf, all the previous leaves (and their parents) must be hashed first.
 type LeafHasher interface {
 	// Hash computes the hash of the leaf from its data and its left siblings on the path to the root.
 	// A buffer is provided to avoid allocations.
 	// Do not modify the data or the siblings in the process of hashing, since they might still be used after calling
 	// this method.
 	Hash(buf, data []byte, leftSiblings [][]byte) []byte
+
+	// Sequential returns true if the hasher is sequential. This means that the left siblings are passed to the Hash
+	// method. If false, `leftSiblings` might be nil and the hasher should not use them.
+	Sequential() bool
 
 	// Size returns the size of the hash in bytes.
 	Size() int
@@ -70,6 +75,10 @@ type valueLeafs struct {
 
 func (v *valueLeafs) Size() int {
 	return v.size
+}
+
+func (v *valueLeafs) Sequential() bool {
+	return false
 }
 
 func (valueLeafs) Hash(buf, data []byte, _ [][]byte) []byte {
@@ -95,6 +104,10 @@ type sequentialWorkHasher struct {
 
 func (sequentialWorkHasher) Size() int {
 	return sha256.Size
+}
+
+func (sequentialWorkHasher) Sequential() bool {
+	return true
 }
 
 func (s *sequentialWorkHasher) Hash(buf, data []byte, parkingNodes [][]byte) []byte {

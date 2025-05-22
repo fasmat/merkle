@@ -500,10 +500,10 @@ func TestValidateProofEmpty(t *testing.T) {
 // goos: linux
 // goarch: arm64
 // pkg: github.com/fasmat/merkle
-// BenchmarkValidateProof-10                             773589          1319 ns/op        1869 B/op     12 allocs/op
-// BenchmarkValidateMultiProof-10                        657993          1736 ns/op        1948 B/op     15 allocs/op
-// BenchmarkValidateProofSequentialWork-10               546477          2086 ns/op        3505 B/op     16 allocs/op
-// BenchmarkValidateMultiProofSequentialWork-10          392596          2808 ns/op        3582 B/op     19 allocs/op
+// BenchmarkValidateProof-10                             902475          1160 ns/op        1696 B/op      8 allocs/op
+// BenchmarkValidateMultiProof-10                        722964          1627 ns/op        1776 B/op     11 allocs/op
+// BenchmarkValidateProofSequentialWork-10               542444          2267 ns/op        3835 B/op     18 allocs/op
+// BenchmarkValidateMultiProofSequentialWork-10          362492          3528 ns/op        4266 B/op     29 allocs/op
 // PASS
 
 // TODO(mafa): check if number of allocations can be reduced when sequential work is not used
@@ -575,7 +575,6 @@ func BenchmarkValidateMultiProofSequentialWork(b *testing.B) {
 }
 
 func FuzzValidate(f *testing.F) {
-	f.Skip()
 	// This fuzz test is used to ensure that the ValidateProof function does not panic
 	// even when given invalid input.
 
