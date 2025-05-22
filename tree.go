@@ -95,18 +95,7 @@ func (t *Tree) Root() []byte {
 
 // RootAndProof returns the root hash and the proof for the leaves to prove.
 func (t *Tree) RootAndProof() ([]byte, [][]byte) {
-	var proof [][]byte
-	if t.leavesToProve != nil {
-		// Proof size is at least the minimum height of the tree either set by the user or
-		// calculated from the current leaf. It can be bigger with multiple leaves to prove.
-		// This sets a reasonable starting capacity for the proof slice to avoid many allocations.
-		proofLen := max(int(t.minHeight), bits.Len64(t.currentLeaf)-1, len(t.proof))
-		proof = make([][]byte, len(t.proof), proofLen)
-		for i, p := range t.proof {
-			proof[i] = make([]byte, len(p))
-			copy(proof[i], p)
-		}
-	}
+	proof := t.makeProof()
 
 	var root []byte
 	onProvingPath := false
@@ -150,4 +139,19 @@ func (t *Tree) RootAndProof() ([]byte, [][]byte) {
 		proof = append(proof, t.padding)
 	}
 	return root, proof
+}
+
+// makeProof allocates a proof object with a size that fits the requested proof without reallocating while building it.
+func (t *Tree) makeProof() [][]byte {
+	if t.leavesToProve == nil {
+		return nil
+	}
+
+	proofLen := max(int(t.minHeight), bits.Len64(t.currentLeaf)-1, len(t.proof))
+	proof := make([][]byte, len(t.proof), proofLen)
+	for i, p := range t.proof {
+		proof[i] = make([]byte, len(p))
+		copy(proof[i], p)
+	}
+	return proof
 }

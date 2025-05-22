@@ -27,6 +27,7 @@ func ExampleBuilder_WithLeafHasher() {
 	fmt.Println(rootString) // Output: 02ce397ec513f034dd6ec5dce3cdb8bfcf10f400a9979cb03abf52d3b5f6c88b
 }
 
+//nolint:gocyclo // test is intentionally complex since it builds a sequential tree manually
 func TestExampleBuilder_WithLeafHasher_Detailed(t *testing.T) {
 	t.Parallel()
 
