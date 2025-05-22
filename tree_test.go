@@ -505,9 +505,129 @@ func TestTreeProofSequentialWork(t *testing.T) {
 	}
 }
 
-// TODO(mafa): add TestTreeMultiProofSequentialWork
-// TODO(mafa): add TestTreeProofUnbalancedSequentialWork
-// TODO(mafa): add TestTreeMultiProofUnbalancedSequentialWork
+func TestTreeMultiProofSequentialWork(t *testing.T) {
+	t.Parallel()
+
+	tree := merkle.TreeBuilder().
+		WithLeafHasher(merkle.SequentialWorkHasher()).
+		WithLeafToProve(0).
+		WithLeafToProve(1).
+		WithLeafToProve(4).
+		Build()
+	buf := make([]byte, tree.NodeSize())
+	for i := range 8 {
+		binary.LittleEndian.PutUint64(buf, uint64(i))
+		tree.Add(buf)
+	}
+
+	root, proof := tree.RootAndProof()
+	rootString := hex.EncodeToString(root)
+	if rootString != "02ce397ec513f034dd6ec5dce3cdb8bfcf10f400a9979cb03abf52d3b5f6c88b" {
+		t.Errorf(
+			"Expected hash to be 02ce397ec513f034dd6ec5dce3cdb8bfcf10f400a9979cb03abf52d3b5f6c88b, got %s",
+			rootString,
+		)
+	}
+
+	expectedProof := []string{
+		"9877cb740c0c4cd5a9a18df2ee05fae87951c73b7bd97cdcde297263783375da",
+		"03085fced9119406c955dc302885a509bf81972ead5fb8b1d87dd3308f9830a2",
+		"64276da1ef80b4d466e654c5808c4ea3f2c57dda04499e0f495ac4593c746993",
+	}
+	if len(proof) != len(expectedProof) {
+		t.Fatalf("Expected proof to be of length %d, got %d", len(expectedProof), len(proof))
+	}
+	for i, p := range proof {
+		pString := hex.EncodeToString(p)
+		if pString != expectedProof[i] {
+			t.Errorf("Expected proof[%d] to be %s, got %s", i, expectedProof[i], pString)
+		}
+	}
+}
+
+func TestTreeProofUnbalancedSequentialWork(t *testing.T) {
+	t.Parallel()
+
+	tree := merkle.TreeBuilder().
+		WithLeafHasher(merkle.SequentialWorkHasher()).
+		WithLeafToProve(8).
+		Build()
+
+	b := make([]byte, tree.NodeSize())
+	for i := range 10 {
+		binary.LittleEndian.PutUint64(b, uint64(i))
+		tree.Add(b)
+	}
+
+	root, proof := tree.RootAndProof()
+	rootString := hex.EncodeToString(root)
+	if rootString != "b52feaee4c84a2762112496115d927eae01122d61b0474fc74b288f2139f7b69" {
+		t.Errorf(
+			"Expected hash to be b52feaee4c84a2762112496115d927eae01122d61b0474fc74b288f2139f7b69, got %s",
+			rootString,
+		)
+	}
+
+	expectedProof := []string{
+		"227fe68b5e59358c69e459b06fba730d6e66ca5ba895179dc9dd710ef25006cd",
+		"0000000000000000000000000000000000000000000000000000000000000000",
+		"0000000000000000000000000000000000000000000000000000000000000000",
+		"02ce397ec513f034dd6ec5dce3cdb8bfcf10f400a9979cb03abf52d3b5f6c88b",
+	}
+	if len(proof) != len(expectedProof) {
+		t.Fatalf("Expected proof to be of length %d, got %d", len(expectedProof), len(proof))
+	}
+	for i, p := range proof {
+		pString := hex.EncodeToString(p)
+		if pString != expectedProof[i] {
+			t.Errorf("Expected proof[%d] to be %s, got %s", i, expectedProof[i], pString)
+		}
+	}
+}
+
+func TestTreeMultiProofUnbalancedSequentialWork(t *testing.T) {
+	t.Parallel()
+
+	tree := merkle.TreeBuilder().
+		WithLeafHasher(merkle.SequentialWorkHasher()).
+		WithLeafToProve(0).
+		WithLeafToProve(4).
+		WithLeafToProve(8).
+		Build()
+	buf := make([]byte, tree.NodeSize())
+	for i := range 10 {
+		binary.LittleEndian.PutUint64(buf, uint64(i))
+		tree.Add(buf)
+	}
+
+	root, proof := tree.RootAndProof()
+	rootString := hex.EncodeToString(root)
+	if rootString != "b52feaee4c84a2762112496115d927eae01122d61b0474fc74b288f2139f7b69" {
+		t.Errorf(
+			"Expected hash to be b52feaee4c84a2762112496115d927eae01122d61b0474fc74b288f2139f7b69, got %s",
+			rootString,
+		)
+	}
+
+	expectedProof := []string{
+		"8877377eae7d7a824d658c6035955535504abb5a517183f28b012495d73e1666",
+		"9877cb740c0c4cd5a9a18df2ee05fae87951c73b7bd97cdcde297263783375da",
+		"03085fced9119406c955dc302885a509bf81972ead5fb8b1d87dd3308f9830a2",
+		"64276da1ef80b4d466e654c5808c4ea3f2c57dda04499e0f495ac4593c746993",
+		"227fe68b5e59358c69e459b06fba730d6e66ca5ba895179dc9dd710ef25006cd",
+		"0000000000000000000000000000000000000000000000000000000000000000",
+		"0000000000000000000000000000000000000000000000000000000000000000",
+	}
+	if len(proof) != len(expectedProof) {
+		t.Fatalf("Expected proof to be of length %d, got %d", len(expectedProof), len(proof))
+	}
+	for i, p := range proof {
+		pString := hex.EncodeToString(p)
+		if pString != expectedProof[i] {
+			t.Errorf("Expected proof[%d] to be %s, got %s", i, expectedProof[i], pString)
+		}
+	}
+}
 
 // Benchmark results
 //

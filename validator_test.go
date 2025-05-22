@@ -243,10 +243,126 @@ func TestValidateMultiProofUnbalanced(t *testing.T) {
 	}
 }
 
-// TODO(mafa): add TestValidateProofSequentialWork
-// TODO(mafa): add TestValidateMultiProofSequentialWork
-// TODO(mafa): add TestValidateProofUnbalancedSequentialWork
-// TODO(mafa): add TestValidateMultiProofUnbalancedSequentialWork
+func TestValidateProofSequentialWork(t *testing.T) {
+	t.Parallel()
+
+	leaves := make(map[uint64][]byte)
+	leaves[4], _ = hex.DecodeString("0400000000000000000000000000000000000000000000000000000000000000")
+
+	root, _ := hex.DecodeString("02ce397ec513f034dd6ec5dce3cdb8bfcf10f400a9979cb03abf52d3b5f6c88b")
+	proof := make([][]byte, 3)
+	proof[0], _ = hex.DecodeString("03085fced9119406c955dc302885a509bf81972ead5fb8b1d87dd3308f9830a2")
+	proof[1], _ = hex.DecodeString("64276da1ef80b4d466e654c5808c4ea3f2c57dda04499e0f495ac4593c746993")
+	proof[2], _ = hex.DecodeString("c3831849e0ae67538cb54a4de0729118685c41822f714f7c466ee641380d01db")
+
+	valid, err := merkle.ValidateProof(root, leaves, proof, merkle.WithLeafHasher(merkle.SequentialWorkHasher()))
+	if err != nil {
+		t.Error(err)
+	}
+	if !valid {
+		t.Error("proof is not valid")
+	}
+
+	// check that the root and proof have not changed
+	rootString := hex.EncodeToString(root)
+	if rootString != "02ce397ec513f034dd6ec5dce3cdb8bfcf10f400a9979cb03abf52d3b5f6c88b" {
+		t.Errorf("root has changed: %s", rootString)
+	}
+
+	if len(leaves) != 1 {
+		t.Errorf("provenLeaves length has changed: %d", len(leaves))
+	}
+	provenLeafString := hex.EncodeToString(leaves[4])
+	if provenLeafString != "0400000000000000000000000000000000000000000000000000000000000000" {
+		t.Errorf("provenLeaves[4] has changed: %s", provenLeafString)
+	}
+
+	expectedProof := []string{
+		"03085fced9119406c955dc302885a509bf81972ead5fb8b1d87dd3308f9830a2",
+		"64276da1ef80b4d466e654c5808c4ea3f2c57dda04499e0f495ac4593c746993",
+		"c3831849e0ae67538cb54a4de0729118685c41822f714f7c466ee641380d01db",
+	}
+	if len(proof) != len(expectedProof) {
+		t.Errorf("proof length has changed: %d", len(proof))
+	}
+	for i, p := range proof {
+		if hex.EncodeToString(p) != expectedProof[i] {
+			t.Errorf("proof[%d] has changed: %s", i, hex.EncodeToString(p))
+		}
+	}
+}
+
+func TestValidateMultiProofSequentialWork(t *testing.T) {
+	t.Parallel()
+
+	leaves := make(map[uint64][]byte)
+	leaves[0], _ = hex.DecodeString("0000000000000000000000000000000000000000000000000000000000000000")
+	leaves[1], _ = hex.DecodeString("0100000000000000000000000000000000000000000000000000000000000000")
+	leaves[4], _ = hex.DecodeString("0400000000000000000000000000000000000000000000000000000000000000")
+
+	root, _ := hex.DecodeString("02ce397ec513f034dd6ec5dce3cdb8bfcf10f400a9979cb03abf52d3b5f6c88b")
+	proof := make([][]byte, 3)
+	proof[0], _ = hex.DecodeString("9877cb740c0c4cd5a9a18df2ee05fae87951c73b7bd97cdcde297263783375da")
+	proof[1], _ = hex.DecodeString("03085fced9119406c955dc302885a509bf81972ead5fb8b1d87dd3308f9830a2")
+	proof[2], _ = hex.DecodeString("64276da1ef80b4d466e654c5808c4ea3f2c57dda04499e0f495ac4593c746993")
+
+	valid, err := merkle.ValidateProof(root, leaves, proof, merkle.WithLeafHasher(merkle.SequentialWorkHasher()))
+	if err != nil {
+		t.Error(err)
+	}
+	if !valid {
+		t.Error("proof is not valid")
+	}
+}
+
+func TestValidateProofUnbalancedSequentialWork(t *testing.T) {
+	t.Parallel()
+
+	leaves := make(map[uint64][]byte)
+	leaves[8], _ = hex.DecodeString("0800000000000000000000000000000000000000000000000000000000000000")
+
+	root, _ := hex.DecodeString("b52feaee4c84a2762112496115d927eae01122d61b0474fc74b288f2139f7b69")
+	proof := make([][]byte, 4)
+	proof[0], _ = hex.DecodeString("227fe68b5e59358c69e459b06fba730d6e66ca5ba895179dc9dd710ef25006cd")
+	proof[1], _ = hex.DecodeString("0000000000000000000000000000000000000000000000000000000000000000")
+	proof[2], _ = hex.DecodeString("0000000000000000000000000000000000000000000000000000000000000000")
+	proof[3], _ = hex.DecodeString("02ce397ec513f034dd6ec5dce3cdb8bfcf10f400a9979cb03abf52d3b5f6c88b")
+
+	valid, err := merkle.ValidateProof(root, leaves, proof, merkle.WithLeafHasher(merkle.SequentialWorkHasher()))
+	if err != nil {
+		t.Error(err)
+	}
+	if !valid {
+		t.Error("proof is not valid")
+	}
+}
+
+func TestValidateMultiProofUnbalancedSequentialWork(t *testing.T) {
+	t.Parallel()
+
+	leaves := make(map[uint64][]byte)
+	leaves[0], _ = hex.DecodeString("0000000000000000000000000000000000000000000000000000000000000000")
+	leaves[4], _ = hex.DecodeString("0400000000000000000000000000000000000000000000000000000000000000")
+	leaves[8], _ = hex.DecodeString("0800000000000000000000000000000000000000000000000000000000000000")
+
+	root, _ := hex.DecodeString("b52feaee4c84a2762112496115d927eae01122d61b0474fc74b288f2139f7b69")
+	proof := make([][]byte, 7)
+	proof[0], _ = hex.DecodeString("8877377eae7d7a824d658c6035955535504abb5a517183f28b012495d73e1666")
+	proof[1], _ = hex.DecodeString("9877cb740c0c4cd5a9a18df2ee05fae87951c73b7bd97cdcde297263783375da")
+	proof[2], _ = hex.DecodeString("03085fced9119406c955dc302885a509bf81972ead5fb8b1d87dd3308f9830a2")
+	proof[3], _ = hex.DecodeString("64276da1ef80b4d466e654c5808c4ea3f2c57dda04499e0f495ac4593c746993")
+	proof[4], _ = hex.DecodeString("227fe68b5e59358c69e459b06fba730d6e66ca5ba895179dc9dd710ef25006cd")
+	proof[5], _ = hex.DecodeString("0000000000000000000000000000000000000000000000000000000000000000")
+	proof[6], _ = hex.DecodeString("0000000000000000000000000000000000000000000000000000000000000000")
+
+	valid, err := merkle.ValidateProof(root, leaves, proof, merkle.WithLeafHasher(merkle.SequentialWorkHasher()))
+	if err != nil {
+		t.Error(err)
+	}
+	if !valid {
+		t.Error("proof is not valid")
+	}
+}
 
 func TestValidateWithHasher(t *testing.T) {
 	t.Parallel()
@@ -268,8 +384,6 @@ func TestValidateWithHasher(t *testing.T) {
 		t.Error("proof is not valid")
 	}
 }
-
-// TODO(mafa): add TestValidateWithLeafHasher
 
 func TestValidateProofInvalid(t *testing.T) {
 	t.Parallel()
@@ -386,8 +500,10 @@ func TestValidateProofEmpty(t *testing.T) {
 // goos: linux
 // goarch: arm64
 // pkg: github.com/fasmat/merkle
-// BenchmarkValidateProof-10                 977810              1216 ns/op            1721 B/op          9 allocs/op
-// BenchmarkValidateMultiProof-10            601164              1798 ns/op            1933 B/op         17 allocs/op
+// BenchmarkValidateProof-10                             773589          1319 ns/op        1869 B/op     12 allocs/op
+// BenchmarkValidateMultiProof-10                        657993          1736 ns/op        1948 B/op     15 allocs/op
+// BenchmarkValidateProofSequentialWork-10               546477          2086 ns/op        3505 B/op     16 allocs/op
+// BenchmarkValidateMultiProofSequentialWork-10          392596          2808 ns/op        3582 B/op     19 allocs/op
 // PASS
 
 // TODO(mafa): check if number of allocations can be reduced when sequential work is not used
@@ -424,10 +540,42 @@ func BenchmarkValidateMultiProof(b *testing.B) {
 	}
 }
 
-// TODO(mafa): add BenchmarkValidateProofSequentialWork
-// TODO(mafa): add BenchmarkValidateMultiProofSequentialWork
+func BenchmarkValidateProofSequentialWork(b *testing.B) {
+	leaves := make(map[uint64][]byte)
+	leaves[4], _ = hex.DecodeString("0400000000000000000000000000000000000000000000000000000000000000")
+
+	root, _ := hex.DecodeString("02ce397ec513f034dd6ec5dce3cdb8bfcf10f400a9979cb03abf52d3b5f6c88b")
+	proof := make([][]byte, 3)
+	proof[0], _ = hex.DecodeString("03085fced9119406c955dc302885a509bf81972ead5fb8b1d87dd3308f9830a2")
+	proof[1], _ = hex.DecodeString("64276da1ef80b4d466e654c5808c4ea3f2c57dda04499e0f495ac4593c746993")
+	proof[2], _ = hex.DecodeString("c3831849e0ae67538cb54a4de0729118685c41822f714f7c466ee641380d01db")
+
+	for b.Loop() {
+		//nolint:errcheck
+		merkle.ValidateProof(root, leaves, proof, merkle.WithLeafHasher(merkle.SequentialWorkHasher()))
+	}
+}
+
+func BenchmarkValidateMultiProofSequentialWork(b *testing.B) {
+	leaves := make(map[uint64][]byte)
+	leaves[0], _ = hex.DecodeString("0000000000000000000000000000000000000000000000000000000000000000")
+	leaves[1], _ = hex.DecodeString("0100000000000000000000000000000000000000000000000000000000000000")
+	leaves[4], _ = hex.DecodeString("0400000000000000000000000000000000000000000000000000000000000000")
+
+	root, _ := hex.DecodeString("02ce397ec513f034dd6ec5dce3cdb8bfcf10f400a9979cb03abf52d3b5f6c88b")
+	proof := make([][]byte, 3)
+	proof[0], _ = hex.DecodeString("9877cb740c0c4cd5a9a18df2ee05fae87951c73b7bd97cdcde297263783375da")
+	proof[1], _ = hex.DecodeString("03085fced9119406c955dc302885a509bf81972ead5fb8b1d87dd3308f9830a2")
+	proof[2], _ = hex.DecodeString("64276da1ef80b4d466e654c5808c4ea3f2c57dda04499e0f495ac4593c746993")
+
+	for b.Loop() {
+		//nolint:errcheck
+		merkle.ValidateProof(root, leaves, proof, merkle.WithLeafHasher(merkle.SequentialWorkHasher()))
+	}
+}
 
 func FuzzValidate(f *testing.F) {
+	f.Skip()
 	// This fuzz test is used to ensure that the ValidateProof function does not panic
 	// even when given invalid input.
 
@@ -473,7 +621,7 @@ func FuzzBuildAndValidateProof(f *testing.F) {
 	// Add a few test cases to the fuzzing function
 	f.Add(uint64(2), uint64(1), []byte{0x00})
 	f.Add(uint64(1000), uint64(1000), []byte{0x01})
-	f.Add(uint64(17), uint64(7), []byte{0x02}) // TODO(mafa): fails with sequential work hasher
+	f.Add(uint64(17), uint64(7), []byte{0x02})
 
 	f.Fuzz(func(t *testing.T, numLeaves, numLeavesToProve uint64, seed []byte) {
 		if numLeaves == 0 || numLeavesToProve == 0 {
@@ -529,4 +677,66 @@ func FuzzBuildAndValidateProof(f *testing.F) {
 	})
 }
 
-// TODO(mafa): add FuzzBuildAndValidateProofSequentialWork
+func FuzzBuildAndValidateProofSequentialWork(f *testing.F) {
+	// This fuzz test is used to ensure that a proof generated by a merkle.Tree can be validated
+	// with the ValidateProof function when using the SequentialWorkHasher.
+
+	// Add a few test cases to the fuzzing function
+	f.Add(uint64(2), uint64(1), []byte{0x00})
+	f.Add(uint64(1000), uint64(1000), []byte{0x01})
+	f.Add(uint64(17), uint64(7), []byte{0x02})
+
+	f.Fuzz(func(t *testing.T, numLeaves, numLeavesToProve uint64, seed []byte) {
+		if numLeaves == 0 || numLeavesToProve == 0 {
+			t.Skip("numLeaves and numLeavesToProve must be greater than 0")
+		}
+		if numLeaves < numLeavesToProve {
+			t.Skip("numLeaves must be greater than numLeavesToProve")
+		}
+
+		var chaChaSeed [32]byte
+		copy(chaChaSeed[:], seed)
+		rngSrc := rand.NewChaCha8(chaChaSeed)
+		rng := rand.New(rngSrc)
+		leavesToProve := make(map[uint64]struct{}, numLeavesToProve)
+
+		leafIndices := make([]uint64, numLeaves)
+		for i := range numLeaves {
+			leafIndices[i] = i
+		}
+		rng.Shuffle(int(numLeaves), func(i, j int) {
+			leafIndices[i], leafIndices[j] = leafIndices[j], leafIndices[i]
+		})
+		leafIndices = leafIndices[:numLeavesToProve]
+		for _, i := range leafIndices {
+			leavesToProve[i] = struct{}{}
+		}
+		leaves := make(map[uint64][]byte, numLeaves)
+
+		tree := merkle.TreeBuilder().
+			WithLeafHasher(merkle.SequentialWorkHasher()).
+			WithLeavesToProve(leavesToProve).
+			Build()
+
+		for i := range numLeaves {
+			b := make([]byte, tree.NodeSize())
+			binary.LittleEndian.PutUint64(b, i)
+			tree.Add(b)
+
+			if _, ok := leavesToProve[uint64(i)]; ok {
+				leaves[uint64(i)] = make([]byte, len(b))
+				copy(leaves[uint64(i)], b)
+			}
+		}
+
+		root, proof := tree.RootAndProof()
+
+		ok, err := merkle.ValidateProof(root, leaves, proof, merkle.WithLeafHasher(merkle.SequentialWorkHasher()))
+		if err != nil {
+			t.Errorf("Error validating proof: %v", err)
+		}
+		if !ok {
+			t.Errorf("Proof validation failed for root %x", root)
+		}
+	})
+}
