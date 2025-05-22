@@ -601,8 +601,6 @@ func TestValidateProofEmpty(t *testing.T) {
 // BenchmarkValidateMultiProofSequentialWork-10          362492          3528 ns/op        4266 B/op     29 allocs/op
 // PASS
 
-// TODO(mafa): check if number of allocations can be reduced when sequential work is not used
-
 func BenchmarkValidateProof(b *testing.B) {
 	leaves := make(map[uint64][]byte)
 	leaves[4], _ = hex.DecodeString("0400000000000000000000000000000000000000000000000000000000000000")
