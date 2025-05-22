@@ -478,6 +478,101 @@ func TestValidateProofInvalid(t *testing.T) {
 	}
 }
 
+func TestValidateProofSequentialWorkInvalid(t *testing.T) {
+	t.Parallel()
+
+	tt := []struct {
+		name string
+		root string
+
+		leaf      string
+		leafIndex uint64
+		proof     []string
+
+		valid bool
+		err   error
+	}{
+		{
+			name:      "invalid root",
+			root:      "0000000000000000000000000000000000000000000000000000000000000000",
+			leaf:      "0400000000000000000000000000000000000000000000000000000000000000",
+			leafIndex: 4,
+			proof: []string{
+				"03085fced9119406c955dc302885a509bf81972ead5fb8b1d87dd3308f9830a2",
+				"64276da1ef80b4d466e654c5808c4ea3f2c57dda04499e0f495ac4593c746993",
+				"c3831849e0ae67538cb54a4de0729118685c41822f714f7c466ee641380d01db",
+			},
+			err:   nil,
+			valid: false,
+		},
+		{
+			name:      "invalid proof",
+			root:      "02ce397ec513f034dd6ec5dce3cdb8bfcf10f400a9979cb03abf52d3b5f6c88b",
+			leaf:      "0400000000000000000000000000000000000000000000000000000000000000",
+			leafIndex: 4,
+			proof: []string{
+				"03085fced9119406c955dc302885a509bf81972ead5fb8b1d87dd3308f9830a2",
+				"64276da1ef80b4d466e654c5808c4ea3f2c57dda04499e0f495ac4593c746993",
+				"0000000000000000000000000000000000000000000000000000000000000000", // invalid node
+			},
+			err:   nil,
+			valid: false,
+		},
+		{
+			name:      "short proof",
+			root:      "02ce397ec513f034dd6ec5dce3cdb8bfcf10f400a9979cb03abf52d3b5f6c88b",
+			leaf:      "0400000000000000000000000000000000000000000000000000000000000000",
+			leafIndex: 4,
+			proof: []string{
+				"03085fced9119406c955dc302885a509bf81972ead5fb8b1d87dd3308f9830a2",
+				"64276da1ef80b4d466e654c5808c4ea3f2c57dda04499e0f495ac4593c746993",
+				// missing node
+			},
+			err:   merkle.ErrShortProof,
+			valid: false,
+		},
+		{
+			name:      "proof padding",
+			root:      "02ce397ec513f034dd6ec5dce3cdb8bfcf10f400a9979cb03abf52d3b5f6c88b",
+			leaf:      "0400000000000000000000000000000000000000000000000000000000000000",
+			leafIndex: 4,
+			proof: []string{
+				"03085fced9119406c955dc302885a509bf81972ead5fb8b1d87dd3308f9830a2",
+				"64276da1ef80b4d466e654c5808c4ea3f2c57dda04499e0f495ac4593c746993",
+				"c3831849e0ae67538cb54a4de0729118685c41822f714f7c466ee641380d01db",
+				"0000000000000000000000000000000000000000000000000000000000000000", // padding
+			},
+			err:   nil,
+			valid: false,
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			provenLeaves := make(map[uint64][]byte)
+			provenLeaves[tc.leafIndex], _ = hex.DecodeString(tc.leaf)
+
+			root, _ := hex.DecodeString(tc.root)
+			proof := make([][]byte, len(tc.proof))
+			for i, p := range tc.proof {
+				proof[i], _ = hex.DecodeString(p)
+			}
+
+			valid, err := merkle.ValidateProof(
+				root, provenLeaves, proof, merkle.WithLeafHasher(merkle.SequentialWorkHasher()),
+			)
+			if !errors.Is(err, tc.err) {
+				t.Errorf("expected error: %v, got: %v", tc.err, err)
+			}
+			if tc.valid != valid {
+				t.Errorf("expected valid: %t, got: %t", tc.valid, valid)
+			}
+		})
+	}
+}
+
 func TestValidateProofEmpty(t *testing.T) {
 	t.Parallel()
 
