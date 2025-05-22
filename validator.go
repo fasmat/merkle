@@ -135,28 +135,30 @@ func (v *validator) parkingNodes(maxHeight uint64, indices []uint64, proof [][]b
 	proofIdx := uint64(0)
 	curIndex := indices[0]
 	curParkedNodes := v.parkedNodes[curIndex]
-	siblings := indices[1:]
+	indices = indices[1:]
 	siblingIdx := 0
 	for height := range maxHeight {
 		switch {
-		case curIndex&1 == 0 && siblingIdx < len(siblings) && (siblings[siblingIdx]>>height) == (curIndex^1):
-			// the subtree with the current height is a left sibling and
-			// the next index is part of the subtree forming the right sibling
+		// the subtree with the current height is a left sibling and
+		// the next leaf is part of the subtree forming the right sibling
+		case curIndex&1 == 0 && siblingIdx < len(indices) && (indices[siblingIdx]>>height) == (curIndex^1):
 			curParkedNodes[height] = curParkedNodes[height][:0]
-			proofLen, siblingLen, err := v.parkingNodes(height, siblings[siblingIdx:], proof[proofIdx:])
-			proofIdx += proofLen
-			siblingIdx++             // we consumed one sibling
-			siblingIdx += siblingLen // recursively consumed siblings
+			proofLen, siblingLen, err := v.parkingNodes(height, indices[siblingIdx:], proof[proofIdx:])
 			if err != nil {
 				return proofIdx, siblingIdx, err
 			}
+			proofIdx += proofLen
+			siblingIdx += 1 + siblingLen // consumed one sibling directly plus `siblingLen` recursively
+
+		// the subtree with the current height is a left sibling and
+		// the subtree forming the right sibling is not part of the proof
 		case curIndex&1 == 0:
-			// the subtree with the current height is a left sibling, so at this height there is no parked node
 			curParkedNodes[height] = curParkedNodes[height][:0]
 			proofIdx++
+
+		// the subtree with the current height is a right sibling
+		// so the proof at this height contains the left sibling which we need as the parked node
 		case curIndex&1 == 1:
-			// the subtree with the current hight is a right sibling
-			// so the proof at this height contains the left sibling which we need as the parked node
 			if proofIdx >= uint64(len(v.proof)) {
 				// if we are missing proof nodes we can't calculate
 				return proofIdx, siblingIdx, ErrShortProof
@@ -164,6 +166,7 @@ func (v *validator) parkingNodes(maxHeight uint64, indices []uint64, proof [][]b
 			curParkedNodes[height] = append(curParkedNodes[height][:0], proof[proofIdx]...)
 			proofIdx++
 		}
+
 		curIndex >>= 1
 	}
 	return proofIdx, siblingIdx, nil

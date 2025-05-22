@@ -2,7 +2,8 @@
 
 ## v0.3.0 (unreleased)
 
-* feat: add option to use proof of sequential work when building the tree, for details see readme and godoc
+* ci: measure cyclomatic complexity and keep it below 15
+* feat: add option to use proof of sequential work when building and verifying a the tree, for details see readme and godoc
 
 ## v0.2.1 (2025-05-20)
 
