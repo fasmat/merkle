@@ -143,6 +143,10 @@ func (v *validator) parkingNodes(maxHeight uint64, siblings []uint64, proof [][]
 		// the next leaf is part of the subtree forming the right sibling
 		case curIndex&1 == 0 && len(siblings) > 0 && (siblings[0]>>height) == (curIndex^1):
 			curParkedNodes[height] = curParkedNodes[height][:0]
+			if proofIdx >= uint64(len(proof)) {
+				// if we are missing proof nodes we can't calculate
+				return proofIdx, 0, ErrShortProof
+			}
 			proofLen, siblingLen, err := v.parkingNodes(height, siblings, proof[proofIdx:])
 			if err != nil {
 				return proofIdx, 0, err
@@ -161,7 +165,7 @@ func (v *validator) parkingNodes(maxHeight uint64, siblings []uint64, proof [][]
 		// the subtree with the current height is a right sibling
 		// so the proof at this height contains the left sibling which we need as the parked node
 		case curIndex&1 == 1:
-			if proofIdx >= uint64(len(v.proof)) {
+			if proofIdx >= uint64(len(proof)) {
 				// if we are missing proof nodes we can't calculate
 				return proofIdx, 0, ErrShortProof
 			}
