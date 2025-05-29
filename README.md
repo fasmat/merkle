@@ -38,4 +38,14 @@ The proof can be verified using the [`ValidateProof`](https://pkg.go.dev/github.
 
 ### Custom Leaf Hashing and Proof of Sequential Work
 
-_TODO(mafa):_ update this section
+The `merkle` package allows you to customize the leaf hashing by implementing the [`LeafHasher`](https://pkg.go.dev/github.com/fasmat/merkle#LeafHasher) interface. This is useful for applications that require specific hashing algorithms or want to preprocess leaf data before adding it to the tree.
+
+An example implementation is the [`SequentialWorkHasher`](https://pkg.go.dev/github.com/fasmat/merkle#SequentialWorkHasher), which hashes each leaf together with all its left siblings. This creates a _proof of sequential work_, useful for applications where it is necessary to demonstrate that a certain amount of work has been performed.
+
+![Proof of Sequential Work construction](docs/PoSW.png)
+
+Unlike traditional proof of work schemes, which involve solving cryptographic puzzles of variable difficulty, proof of sequential work relies on a deterministic and predictable amount of computation. Hashing each leaf with its left siblings ensures that the process cannot be parallelized and that early termination yields partial progress. This makes it an efficient way to prove that a series of steps were performed in order.
+
+Verification of such a sequential proof of work is an interactive process: the verifier can request any leaf and its corresponding Merkle proof from the prover, then validate that the leaf is part of the tree. The more leaves the prover can produce with valid proofs, the higher the confidence the verifier has that the prover performed the full computation.
+
+In a future release, the library will support persisting leaves and nodes to disk, enabling a more efficient proving/verification process even for large trees.
