@@ -19,4 +19,4 @@ jobs:
           body: |
             ## Release Notes
 
-            For information about changes in this release see the [changelog](https://github.com/fasmat/merkle/blob/${{ github.ref_name }}/CHANGELOG.md).
+            For information about changes in this release see the [changelog](https://github.com/${{ github.repository }}/blob/${{ github.ref_name }}/CHANGELOG.md).
