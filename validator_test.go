@@ -392,15 +392,15 @@ func TestValidateProofInvalid(t *testing.T) {
 		name string
 		root string
 
-		leafs map[uint64]string
-		proof []string
+		leaves map[uint64]string
+		proof  []string
 
 		err error
 	}{
 		{
 			name: "single/invalid root",
 			root: "0000000000000000000000000000000000000000000000000000000000000000",
-			leafs: map[uint64]string{
+			leaves: map[uint64]string{
 				4: "0400000000000000000000000000000000000000000000000000000000000000",
 			},
 			proof: []string{
@@ -412,7 +412,7 @@ func TestValidateProofInvalid(t *testing.T) {
 		{
 			name: "single/invalid proof",
 			root: "89a0f1577268cc19b0a39c7a69f804fd140640c699585eb635ebb03c06154cce",
-			leafs: map[uint64]string{
+			leaves: map[uint64]string{
 				4: "0400000000000000000000000000000000000000000000000000000000000000",
 			},
 			proof: []string{
@@ -424,7 +424,7 @@ func TestValidateProofInvalid(t *testing.T) {
 		{
 			name: "single/short proof",
 			root: "89a0f1577268cc19b0a39c7a69f804fd140640c699585eb635ebb03c06154cce",
-			leafs: map[uint64]string{
+			leaves: map[uint64]string{
 				4: "0400000000000000000000000000000000000000000000000000000000000000",
 			},
 			proof: []string{
@@ -437,7 +437,7 @@ func TestValidateProofInvalid(t *testing.T) {
 		{
 			name: "single/proof padding",
 			root: "89a0f1577268cc19b0a39c7a69f804fd140640c699585eb635ebb03c06154cce",
-			leafs: map[uint64]string{
+			leaves: map[uint64]string{
 				4: "0400000000000000000000000000000000000000000000000000000000000000",
 			},
 			proof: []string{
@@ -450,7 +450,7 @@ func TestValidateProofInvalid(t *testing.T) {
 		{
 			name: "multi/invalid root",
 			root: "0000000000000000000000000000000000000000000000000000000000000000",
-			leafs: map[uint64]string{
+			leaves: map[uint64]string{
 				0: "0000000000000000000000000000000000000000000000000000000000000000",
 				1: "0100000000000000000000000000000000000000000000000000000000000000",
 				4: "0400000000000000000000000000000000000000000000000000000000000000",
@@ -464,7 +464,7 @@ func TestValidateProofInvalid(t *testing.T) {
 		{
 			name: "multi/invalid proof",
 			root: "89a0f1577268cc19b0a39c7a69f804fd140640c699585eb635ebb03c06154cce",
-			leafs: map[uint64]string{
+			leaves: map[uint64]string{
 				0: "0000000000000000000000000000000000000000000000000000000000000000",
 				1: "0100000000000000000000000000000000000000000000000000000000000000",
 				4: "0400000000000000000000000000000000000000000000000000000000000000",
@@ -478,7 +478,7 @@ func TestValidateProofInvalid(t *testing.T) {
 		{
 			name: "multi/short proof",
 			root: "89a0f1577268cc19b0a39c7a69f804fd140640c699585eb635ebb03c06154cce",
-			leafs: map[uint64]string{
+			leaves: map[uint64]string{
 				0: "0000000000000000000000000000000000000000000000000000000000000000",
 				1: "0100000000000000000000000000000000000000000000000000000000000000",
 				4: "0400000000000000000000000000000000000000000000000000000000000000",
@@ -493,7 +493,7 @@ func TestValidateProofInvalid(t *testing.T) {
 		{
 			name: "multi/proof padding",
 			root: "89a0f1577268cc19b0a39c7a69f804fd140640c699585eb635ebb03c06154cce",
-			leafs: map[uint64]string{
+			leaves: map[uint64]string{
 				0: "0000000000000000000000000000000000000000000000000000000000000000",
 				1: "0100000000000000000000000000000000000000000000000000000000000000",
 				4: "0400000000000000000000000000000000000000000000000000000000000000",
@@ -511,8 +511,8 @@ func TestValidateProofInvalid(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			provenLeaves := make(map[uint64][]byte, len(tc.leafs))
-			for i, leaf := range tc.leafs {
+			provenLeaves := make(map[uint64][]byte, len(tc.leaves))
+			for i, leaf := range tc.leaves {
 				provenLeaves[i], _ = hex.DecodeString(leaf)
 			}
 
@@ -540,15 +540,15 @@ func TestValidateProofSequentialWorkInvalid(t *testing.T) {
 		name string
 		root string
 
-		leafs map[uint64]string
-		proof []string
+		leaves map[uint64]string
+		proof  []string
 
 		err error
 	}{
 		{
 			name: "single/invalid root",
 			root: "0000000000000000000000000000000000000000000000000000000000000000",
-			leafs: map[uint64]string{
+			leaves: map[uint64]string{
 				4: "0400000000000000000000000000000000000000000000000000000000000000",
 			},
 			proof: []string{
@@ -560,7 +560,7 @@ func TestValidateProofSequentialWorkInvalid(t *testing.T) {
 		{
 			name: "single/invalid proof",
 			root: "02ce397ec513f034dd6ec5dce3cdb8bfcf10f400a9979cb03abf52d3b5f6c88b",
-			leafs: map[uint64]string{
+			leaves: map[uint64]string{
 				4: "0400000000000000000000000000000000000000000000000000000000000000",
 			},
 			proof: []string{
@@ -572,7 +572,7 @@ func TestValidateProofSequentialWorkInvalid(t *testing.T) {
 		{
 			name: "single/short proof",
 			root: "02ce397ec513f034dd6ec5dce3cdb8bfcf10f400a9979cb03abf52d3b5f6c88b",
-			leafs: map[uint64]string{
+			leaves: map[uint64]string{
 				4: "0400000000000000000000000000000000000000000000000000000000000000",
 			},
 			proof: []string{
@@ -585,7 +585,7 @@ func TestValidateProofSequentialWorkInvalid(t *testing.T) {
 		{
 			name: "single/proof padding",
 			root: "02ce397ec513f034dd6ec5dce3cdb8bfcf10f400a9979cb03abf52d3b5f6c88b",
-			leafs: map[uint64]string{
+			leaves: map[uint64]string{
 				4: "0400000000000000000000000000000000000000000000000000000000000000",
 			},
 			proof: []string{
@@ -598,7 +598,7 @@ func TestValidateProofSequentialWorkInvalid(t *testing.T) {
 		{
 			name: "multi/invalid root",
 			root: "0000000000000000000000000000000000000000000000000000000000000000",
-			leafs: map[uint64]string{
+			leaves: map[uint64]string{
 				0: "0000000000000000000000000000000000000000000000000000000000000000",
 				1: "0100000000000000000000000000000000000000000000000000000000000000",
 				4: "0400000000000000000000000000000000000000000000000000000000000000",
@@ -612,7 +612,7 @@ func TestValidateProofSequentialWorkInvalid(t *testing.T) {
 		{
 			name: "multi/invalid proof",
 			root: "02ce397ec513f034dd6ec5dce3cdb8bfcf10f400a9979cb03abf52d3b5f6c88b",
-			leafs: map[uint64]string{
+			leaves: map[uint64]string{
 				0: "0000000000000000000000000000000000000000000000000000000000000000",
 				1: "0100000000000000000000000000000000000000000000000000000000000000",
 				4: "0400000000000000000000000000000000000000000000000000000000000000",
@@ -626,7 +626,7 @@ func TestValidateProofSequentialWorkInvalid(t *testing.T) {
 		{
 			name: "multi/short proof",
 			root: "02ce397ec513f034dd6ec5dce3cdb8bfcf10f400a9979cb03abf52d3b5f6c88b",
-			leafs: map[uint64]string{
+			leaves: map[uint64]string{
 				0: "0000000000000000000000000000000000000000000000000000000000000000",
 				1: "0100000000000000000000000000000000000000000000000000000000000000",
 				4: "0400000000000000000000000000000000000000000000000000000000000000",
@@ -641,7 +641,7 @@ func TestValidateProofSequentialWorkInvalid(t *testing.T) {
 		{
 			name: "multi/proof padding",
 			root: "02ce397ec513f034dd6ec5dce3cdb8bfcf10f400a9979cb03abf52d3b5f6c88b",
-			leafs: map[uint64]string{
+			leaves: map[uint64]string{
 				0: "0000000000000000000000000000000000000000000000000000000000000000",
 				1: "0100000000000000000000000000000000000000000000000000000000000000",
 				4: "0400000000000000000000000000000000000000000000000000000000000000",
@@ -659,8 +659,8 @@ func TestValidateProofSequentialWorkInvalid(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			provenLeaves := make(map[uint64][]byte, len(tc.leafs))
-			for i, leaf := range tc.leafs {
+			provenLeaves := make(map[uint64][]byte, len(tc.leaves))
+			for i, leaf := range tc.leaves {
 				provenLeaves[i], _ = hex.DecodeString(leaf)
 			}
 
