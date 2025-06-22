@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strconv"
 )
@@ -82,7 +83,7 @@ func NewFileLayerCache(path string) (LayerCache, error) {
 		if err != nil {
 			return nil, fmt.Errorf("error parsing layer number from file name %s: %w", entry.Name(), err)
 		}
-		file, err := os.OpenFile(fmt.Sprintf("%s/%s", path, entry.Name()), os.O_RDWR|os.O_CREATE, 0o644)
+		file, err := os.OpenFile(filepath.Join(path, entry.Name()), os.O_RDWR|os.O_CREATE, 0o644)
 		if err != nil {
 			return nil, fmt.Errorf("error opening file %s: %w", entry.Name(), err)
 		}
@@ -100,7 +101,7 @@ func (f *fileLayerCache) openFile(layer uint) (*os.File, error) {
 	if f.files[layer] != nil {
 		return f.files[layer], nil
 	}
-	file, err := os.OpenFile(fmt.Sprintf("%s/layer_%d.bin", f.path, layer), os.O_RDWR|os.O_CREATE, 0o644)
+	file, err := os.OpenFile(filepath.Join(f.path, fmt.Sprintf("layer_%d.bin", layer)), os.O_RDWR|os.O_CREATE, 0o644)
 	if err != nil {
 		return nil, fmt.Errorf("error opening file for layer %d: %w", layer, err)
 	}
