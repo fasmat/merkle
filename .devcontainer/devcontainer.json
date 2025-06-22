@@ -58,9 +58,14 @@
 				"go.formatFlags": [
 					"-extra"
 				],
-				"go.lintTool": "golangci-lint",
+				"go.lintTool": "golangci-lint-v2", // Temporary workaround until vscode-go supports golangci-lint v2
 				"go.lintFlags": [
-					"--fast"
+					"run",
+					"--issues-exit-code=0",
+					"--output.text.colors=true",
+					"--output.text.path=stdout",
+					"--output.text.print-issued-lines=false",
+					"--show-stats=false"
 				],
 				"go.toolsManagement.autoUpdate": true,
 				"go.toolsManagement.checkForUpdates": "local",

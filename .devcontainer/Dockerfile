@@ -12,3 +12,9 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
 
 RUN curl https://raw.githubusercontent.com/docker/docker-ce/master/components/cli/contrib/completion/bash/docker \
     -o /etc/bash_completion.d/docker.sh
+
+# [Optional] Uncomment if you want to install additional Go tools.
+RUN go install mvdan.cc/gofumpt@v0.7.0
+
+# Copy the golangci-lint binary to a new name (workaround until vscode-go supports v2)
+RUN cp /go/bin/golangci-lint /go/bin/golangci-lint-v2
