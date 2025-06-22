@@ -69,31 +69,31 @@ type LeafHasher interface {
 	Size() int
 }
 
-type valueLeafs struct {
+type valueLeaves struct {
 	size int
 }
 
-func (v *valueLeafs) Size() int {
+func (v *valueLeaves) Size() int {
 	return v.size
 }
 
-func (v *valueLeafs) Sequential() bool {
+func (v *valueLeaves) Sequential() bool {
 	return false
 }
 
-func (valueLeafs) Hash(buf, data []byte, _ [][]byte) []byte {
+func (valueLeaves) Hash(buf, data []byte, _ [][]byte) []byte {
 	buf = append(buf[:0], data...)
 	return buf
 }
 
-// ValueLeafs returns a LeafHasher that uses the added value as leaf hash. This is useful when the leaves are already
+// ValueLeaves returns a LeafHasher that uses the added value as leaf hash. This is useful when the leaves are already
 // hashes and you want to use them as is in the tree.
 //
 // The LeafHasher will copy the data passed to Add(). For this uses a buffer of the given size. You can specify the
 // size of the buffer that is used. To avoid unnecessary re-allocations it should be large enough to hold any leaf you
 // want to add.
-func ValueLeafs(size int) LeafHasher {
-	return &valueLeafs{
+func ValueLeaves(size int) LeafHasher {
+	return &valueLeaves{
 		size: size,
 	}
 }
