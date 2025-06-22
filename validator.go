@@ -145,11 +145,11 @@ func (v *validator) parkingNodes(maxHeight uint64, siblings []uint64, proof [][]
 			curParkedNodes[height] = curParkedNodes[height][:0]
 			if proofIdx >= uint64(len(proof)) {
 				// if we are missing proof nodes we can't calculate
-				return proofIdx, 0, ErrShortProof
+				return proofIdx, numSiblings, ErrShortProof
 			}
 			proofLen, siblingLen, err := v.parkingNodes(height, siblings, proof[proofIdx:])
 			if err != nil {
-				return proofIdx, 0, err
+				return proofIdx, numSiblings, err
 			}
 			proofIdx += proofLen
 			// consumed one sibling directly plus `siblingLen` recursively
@@ -167,7 +167,7 @@ func (v *validator) parkingNodes(maxHeight uint64, siblings []uint64, proof [][]
 		case curIndex&1 == 1:
 			if proofIdx >= uint64(len(proof)) {
 				// if we are missing proof nodes we can't calculate
-				return proofIdx, 0, ErrShortProof
+				return proofIdx, numSiblings, ErrShortProof
 			}
 			curParkedNodes[height] = append(curParkedNodes[height][:0], proof[proofIdx]...)
 			proofIdx++
