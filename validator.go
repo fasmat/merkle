@@ -31,7 +31,7 @@ func (v *validatorOpts) Hasher() Hasher {
 
 func (v *validatorOpts) LeafHasher() LeafHasher {
 	if v.leafHasher == nil {
-		v.leafHasher = ValueLeafs(v.Hasher().Size())
+		v.leafHasher = ValueLeaves(v.Hasher().Size())
 	}
 	return v.leafHasher
 }
@@ -46,7 +46,7 @@ func WithHasher(h Hasher) ValidatorOpt {
 	}
 }
 
-// WithLeafHasher sets the hash function for the leaves of the Merkle tree. If not set, the leafs are used as is.
+// WithLeafHasher sets the hash function for the leaves of the Merkle tree. If not set, the leaves are used as is.
 // It can be used when some form of Proof of Sequential Work (PoSW) is needed when building the tree. For details
 // see the LeafHasher interface.
 //
