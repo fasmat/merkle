@@ -8,16 +8,19 @@ linters:
   enable:
     - copyloopvar
     - depguard
+    - embeddedstructfieldcheck
     - errname
     - errorlint
     - exptostd
     - fatcontext
     - gocyclo
+    - godoclint
     - inamedparam
     - ineffassign
     - intrange
     - lll
     - misspell
+    - modernize
     - nakedret
     - nestif
     - paralleltest
@@ -82,6 +85,10 @@ linters:
     usetesting:
       # Enable/disable `os.TempDir()` detections.
       os-temp-dir: true
+      # Enable/disable `context.Background()` detections.
+      context-background: true
+      # Enable/disable `context.TODO()` detections.
+      context-todo: true
 
 formatters:
   enable:
