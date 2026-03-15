@@ -2,6 +2,7 @@ name: CI
 
 # Trigger workflow on pull request or pushes to main branch
 on:
+  workflow_dispatch:
   pull_request:
   push:
     branches: [main]
