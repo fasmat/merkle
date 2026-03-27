@@ -8,6 +8,7 @@ linters:
   enable:
     - copyloopvar
     - depguard
+    - dupl
     - embeddedstructfieldcheck
     - errname
     - errorlint
@@ -29,6 +30,7 @@ linters:
     - revive
     - staticcheck
     - testableexamples
+    # - testpackage
     - thelper
     - tparallel
     - unused
@@ -89,6 +91,17 @@ linters:
       context-background: true
       # Enable/disable `context.TODO()` detections.
       context-todo: true
+  exclusions:
+    rules:
+      - source: "`(json|yaml).*"
+        linters:
+          - lll
+      - source: "defer"
+        linters:
+          - errcheck
+      - path: "_test\\.go"
+        linters:
+          - dupl
 
 formatters:
   enable:
