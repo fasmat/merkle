@@ -10,7 +10,7 @@ jobs:
   release:
     runs-on: ubuntu-24.04
     permissions:
-        contents: write
+      contents: write
     steps:
       - name: Create Release
         uses: softprops/action-gh-release@153bb8e04406b158c6c84fc1615b65b24149a1fe # v2.6.1
