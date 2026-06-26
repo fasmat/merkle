@@ -31,7 +31,7 @@ func (tb *Builder) WithHasher(h Hasher) *Builder {
 	return tb
 }
 
-// WithLeafHasher sets the hash function for the leaves of the Merkle tree. If not set, the leafs are used as is.
+// WithLeafHasher sets the hash function for the leaves of the Merkle tree. If not set, the leaves are used as is.
 // It can be used when some form of Proof of Sequential Work (PoSW) is needed when building the tree. For details
 // see the LeafHasher interface.
 //
@@ -72,7 +72,7 @@ func (tb *Builder) Build() *Tree {
 	if tb.leafHasher == nil {
 		// If the leaf hasher is not set, use the values as leaves directly and assume they are
 		// the same size as the hasher.
-		tb.leafHasher = ValueLeafs(tb.hasher.Size())
+		tb.leafHasher = ValueLeaves(tb.hasher.Size())
 	}
 
 	indices := slices.Collect(maps.Keys(tb.leavesToProve))
